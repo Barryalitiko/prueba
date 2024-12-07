@@ -28,3 +28,19 @@ exports.getProfileImageData = async (socket, userJid) => {
 
   return { buffer, profileImage, success };
 };
+
+//PRUEBA
+
+exports.updateGroupSettings = async (remoteJid, setting) => {
+  try {
+    // Crea una instancia del socket de Baileys
+    const socket = makeWASocket();
+
+    // Actualiza la configuración del grupo
+    await socket.groupSettingUpdate(remoteJid, setting);
+    return { success: true };
+  } catch (error) {
+    console.error("Error al actualizar la configuración del grupo:", error);
+    return { success: false, error: error.message };
+  }
+};
