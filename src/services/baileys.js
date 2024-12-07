@@ -25,13 +25,13 @@ exports.getProfileImageData = async (socket, userJid) => {
 
 exports.updateGroupSettings = async (remoteJid, setting) => {
   try {
-    // Crea una instancia del socket de Baileys
-    const socket = makeWASocket();
 
-    // Actualiza la configuración del grupo
-    await socket.groupSettingUpdate(remoteJid, setting);
+    const sock = makeWASocket();
 
-    // Cierra la conexión del socket
+
+    await sock.groupSettingUpdate(remoteJid, setting);
+
+
     await socket.close();
 
     return { success: true };
