@@ -1,6 +1,6 @@
 const { PREFIX } = require("../../config");
 const { InvalidParameterError } = require("../../errors/InvalidParameterError");
-const { updateGroupSettings } = require("../../utils/database");
+const { openGroup, closeGroup, isGroupClosed } = require("../../utils/database");
 
 module.exports = {
   name: "grupo",
@@ -11,7 +11,7 @@ module.exports = {
     // Verificar que se haya recibido un argumento
     if (!args.length) {
       throw new InvalidParameterError(
-        "👻 Krampus.bot 👻 Escribe 1 para abrir el grupo o 0 para cerrarlo."
+        "🚨 ¡Error! 🚨 Escribe 1 para abrir el grupo o 0 para cerrarlo. 🤔"
       );
     }
 
@@ -21,24 +21,36 @@ module.exports = {
     // Validar los parámetros (solo se aceptan 1 o 0)
     if (!action) {
       throw new InvalidParameterError(
-        "👻 Krampus.bot 👻 Solo puedes usar 1 para abrir el grupo o 0 para cerrarlo."
+        "🚫 ¡Invalido! 🚫 Solo puedes usar 1 para abrir el grupo o 0 para cerrarlo. 🤷‍♂️"
       );
     }
 
     try {
-      // Actualizar la configuración del grupo
-      const result = await updateGroupSettings(remoteJid, action === "open" ? "not_announcement" : "announcement");
+      // Verificar si el grupo está cerrado
+      if (action === "open" && !(await isGroupClosed(remoteJid))) {
+        await sendReply("👍 ¡Listo! 👍 El grupo ya está abierto. 🤩");
+        return;
+      }
 
-      if (result.success) {
+      // Verificar si el grupo está abierto
+      if (action === "close" && (await isGroupClosed(remoteJid))) {
+        await sendReply("👍 ¡Listo! 👍 El grupo ya está cerrado. 🤐");
+        return;
+      }
+
+      // Abrir o cerrar el grupo
+      if (action === "open") {
+        await openGroup(remoteJid);
         await sendSuccessReact();
-        const actionText = action === "open" ? "🔓 Abierto" : "🔒 Cerrado";
-        await sendReply(`👻 Krampus.bot 👻 El grupo ha sido ${actionText} correctamente.`);
-      } else {
-        await sendReply("👻 Krampus.bot 👻 Hubo un problema al actualizar la configuración del grupo.");
+        await sendReply("🔓 ¡Abierto! 🔓 El grupo ha sido abierto correctamente. 🎉");
+      } else if (action === "close") {
+        await closeGroup(remoteJid);
+        await sendSuccessReact();
+        await sendReply("🔒 ¡Cerrado! 🔒 El grupo ha sido cerrado correctamente. 🚫");
       }
     } catch (error) {
       console.error(error);
-      await sendReply("👻 Krampus.bot 👻 No se pudo actualizar la configuración del grupo. Inténtalo de nuevo más tarde.");
+      await sendReply("🚨 ¡Error! 🚨 No se pudo actualizar la configuración del grupo. Inténtalo de nuevo más tarde. 🤔");
     }
   },
 };
