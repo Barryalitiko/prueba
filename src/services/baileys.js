@@ -1,5 +1,5 @@
-const { makeWASocket } = require('@adiwajshing/baileys');
-const { groupSettingUpdate } = require('@adiwajshing/baileys');
+const { makeWASocket } = require('@whiskeysockets/baileys');
+const { groupSettingUpdate } = require('@whiskeysockets/baileys');
 const { getBuffer, getRandomName } = require("../utils");
 const fs = require("fs");
 const path = require("path");
