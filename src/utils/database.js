@@ -68,43 +68,6 @@ exports.isActiveWelcomeGroup = (groupId) => {
   return !notWelcomeGroups.includes(groupId);
 };
 
-// Funciones para manejar los permisos de mensaje de grupo
-exports.activateGroupMessages = (groupId) => {
-  const filename = NOT_GRUPO_GROUPS_FILE; // Podrías usar otro archivo específico si lo prefieres
-
-  const noMessageGroups = readJSON(filename);
-
-  const index = noMessageGroups.indexOf(groupId);
-
-  if (index === -1) {
-    return;
-  }
-
-  noMessageGroups.splice(index, 1);
-
-  writeJSON(filename, noMessageGroups);
-};
-
-exports.deactivateGroupMessages = (groupId) => {
-  const filename = NOT_GRUPO_GROUPS_FILE; // Podrías usar otro archivo específico si lo prefieres
-
-  const noMessageGroups = readJSON(filename);
-
-  if (!noMessageGroups.includes(groupId)) {
-    noMessageGroups.push(groupId);
-  }
-
-  writeJSON(filename, noMessageGroups);
-};
-
-exports.isGroupMessagesActive = (groupId) => {
-  const filename = NOT_GRUPO_GROUPS_FILE; // Podrías usar otro archivo específico si lo prefieres
-
-  const noMessageGroups = readJSON(filename);
-
-  return !noMessageGroups.includes(groupId);
-};
-
 // Funciones para manejar el auto-responder
 exports.getAutoResponderResponse = (match) => {
   const filename = "auto-responder";
