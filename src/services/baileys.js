@@ -1,5 +1,3 @@
-const makeWASocket = require('../@whiskeysockets/baileys');
-const groupSettingUpdate = require('../@whiskeysockets/baileys');
 const { getBuffer, getRandomName } = require("../utils");
 const fs = require("fs");
 const path = require("path");
@@ -9,35 +7,40 @@ exports.getProfileImageData = async (socket, userJid) => {
   let profileImage = "";
   let buffer = null;
   let success = true;
+
   try {
     profileImage = await socket.profilePictureUrl(userJid, "image");
+
     buffer = await getBuffer(profileImage);
+
     const tempImage = path.resolve(TEMP_DIR, getRandomName("png"));
+
     fs.writeFileSync(tempImage, buffer);
+
     profileImage = tempImage;
   } catch (error) {
     success = false;
+
     profileImage = path.resolve(ASSETS_DIR, "images", "default-user.png");
+
     buffer = fs.readFileSync(profileImage);
   }
+
   return { buffer, profileImage, success };
 };
 
+//PRUEBA
+
 exports.updateGroupSettings = async (remoteJid, setting) => {
   try {
+    // Crea una instancia del socket de Baileys
+    const socket = makeWASocket();
 
-    const sock = makeWASocket();
-
-
-    await sock.groupSettingUpdate(remoteJid, setting);
-
-
-    await socket.close();
-
+    // Actualiza la configuración del grupo
+    await socket.groupSettingUpdate(remoteJid, setting);
     return { success: true };
   } catch (error) {
     console.error("Error al actualizar la configuración del grupo:", error);
     return { success: false, error: error.message };
   }
 };
-
