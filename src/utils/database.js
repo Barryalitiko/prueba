@@ -195,14 +195,14 @@ exports.isActiveAntiLinkGroup = (groupId) => {
 
 // Cerrar un grupo
 exports.closeGroup = (groupId) => {
-  const filename = CLOSED_GROUPS_FILE; // Usamos la nueva constante
-  const closedGroups = readJSON(filename); // Leer los grupos cerrados
-  
+  const filename = CLOSED_GROUPS_FILE;
+  const closedGroups = readJSON(filename);
+
   if (!closedGroups.includes(groupId)) {
-    closedGroups.push(groupId); // Agregar el grupo a la lista de cerrados
+    closedGroups.push(groupId);
   }
-  
-  writeJSON(filename, closedGroups); // Guardar la lista actualizada
+
+  writeJSON(filename, closedGroups);
 };
 
 // Abrir un grupo
