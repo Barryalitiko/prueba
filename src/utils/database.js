@@ -7,6 +7,7 @@ const INACTIVE_GROUPS_FILE = "inactive-groups";
 const NOT_WELCOME_GROUPS_FILE = "not-welcome-groups";
 const INACTIVE_AUTO_RESPONDER_GROUPS_FILE = "inactive-auto-responder-groups";
 const ANTI_LINK_GROUPS_FILE = "anti-link-groups";
+const CLOSED_GROUPS_FILE = "closed-groups";
 
 function createIfNotExists(fullPath) {
   if (!fs.existsSync(fullPath)) {
@@ -190,4 +191,38 @@ exports.isActiveAntiLinkGroup = (groupId) => {
   const antiLinkGroups = readJSON(filename);
 
   return antiLinkGroups.includes(groupId);
+};
+
+// Cerrar un grupo
+exports.closeGroup = (groupId) => {
+  const filename = CLOSED_GROUPS_FILE; // Usamos la nueva constante
+  const closedGroups = readJSON(filename); // Leer los grupos cerrados
+  
+  if (!closedGroups.includes(groupId)) {
+    closedGroups.push(groupId); // Agregar el grupo a la lista de cerrados
+  }
+  
+  writeJSON(filename, closedGroups); // Guardar la lista actualizada
+};
+
+// Abrir un grupo
+exports.openGroup = (groupId) => {
+  const filename = CLOSED_GROUPS_FILE; // Usamos la nueva constante
+  const closedGroups = readJSON(filename); // Leer los grupos cerrados
+  
+  const index = closedGroups.indexOf(groupId); // Buscar el grupo en la lista de cerrados
+  
+  if (index !== -1) {
+    closedGroups.splice(index, 1); // Eliminar el grupo de la lista de cerrados (abrirlo)
+  }
+  
+  writeJSON(filename, closedGroups); // Guardar la lista actualizada
+};
+
+// Verificar si un grupo está cerrado
+exports.isGroupClosed = (groupId) => {
+  const filename = CLOSED_GROUPS_FILE; // Usamos la nueva constante
+  const closedGroups = readJSON(filename); // Leer los grupos cerrados
+  
+  return closedGroups.includes(groupId); // Retorna true si el grupo está cerrado
 };
