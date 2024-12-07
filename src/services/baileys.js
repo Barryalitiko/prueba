@@ -38,6 +38,10 @@ exports.updateGroupSettings = async (remoteJid, setting) => {
 
     // Actualiza la configuración del grupo
     await socket.groupSettingUpdate(remoteJid, setting);
+
+    // Cierra la conexión del socket
+    await socket.close();
+
     return { success: true };
   } catch (error) {
     console.error("Error al actualizar la configuración del grupo:", error);
