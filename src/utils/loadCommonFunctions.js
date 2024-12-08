@@ -1,8 +1,7 @@
-const { closeGroup, openGroup, isGroupClosed } = require("../utils/database"); // Asegúrate de importar las funciones
+const { BOT_EMOJI } = require("../config");
+const { extractDataFromMessage, baileysIs, download } = require(".");
+const { waitMessage } = require("./messages");
 const fs = require("fs");
-const { baileysIs, download } = require("../utils/helpers"); // Asegúrate de tener estas funciones en el archivo helpers.js
-
-const BOT_EMOJI = "👻";  // Define el emoji que usarás en las respuestas
 
 exports.loadCommonFunctions = ({ socket, webMessage }) => {
   const {
