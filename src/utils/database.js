@@ -193,36 +193,38 @@ exports.isActiveAntiLinkGroup = (groupId) => {
   return antiLinkGroups.includes(groupId);
 };
 
-// Cerrar un grupo
 exports.closeGroup = (groupId) => {
   const filename = CLOSED_GROUPS_FILE;
   const closedGroups = readJSON(filename);
 
-  if (!closedGroups.includes(groupId)) {
-    closedGroups.push(groupId);
+  if (this.isGroupClosed(groupId)) {
+    console.log(`El grupo ${groupId} ya está cerrado`); // Log si el grupo ya está cerrado
+    return; // No cerramos el grupo si ya está cerrado
+  }
+
+  closedGroups.push(groupId);
+  console.log(`Grupo cerrado: ${groupId}`); // Log para verificar el cierre
+  writeJSON(filename, closedGroups);
+};
+
+exports.openGroup = (groupId) => {
+  const filename = CLOSED_GROUPS_FILE;
+  const closedGroups = readJSON(filename);
+
+  const index = closedGroups.indexOf(groupId);
+
+  if (index !== -1) {
+    closedGroups.splice(index, 1);
+    console.log(`Grupo abierto: ${groupId}`); // Log para verificar la apertura
+  } else {
+    console.log(`El grupo ${groupId} ya está abierto`); // Log si el grupo ya estaba abierto
   }
 
   writeJSON(filename, closedGroups);
 };
 
-// Abrir un grupo
-exports.openGroup = (groupId) => {
-  const filename = CLOSED_GROUPS_FILE; // Usamos la nueva constante
-  const closedGroups = readJSON(filename); // Leer los grupos cerrados
-  
-  const index = closedGroups.indexOf(groupId); // Buscar el grupo en la lista de cerrados
-  
-  if (index !== -1) {
-    closedGroups.splice(index, 1); // Eliminar el grupo de la lista de cerrados (abrirlo)
-  }
-  
-  writeJSON(filename, closedGroups); // Guardar la lista actualizada
-};
-
-// Verificar si un grupo está cerrado
 exports.isGroupClosed = (groupId) => {
-  const filename = CLOSED_GROUPS_FILE; // Usamos la nueva constante
-  const closedGroups = readJSON(filename); // Leer los grupos cerrados
-  
+  const filename = CLOSED_GROUPS_FILE;
+  const closedGroups = readJSON(filename);
   return closedGroups.includes(groupId); // Retorna true si el grupo está cerrado
 };
