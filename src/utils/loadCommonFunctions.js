@@ -2,10 +2,19 @@ const { BOT_EMOJI } = require("../config");
 const { extractDataFromMessage, baileysIs, download } = require(".");
 const { waitMessage } = require("./messages");
 const fs = require("fs");
-const { getGroupAdmins, getGroupMembers, isGroupAdmin, addGroupAdmin, removeGroupAdmin, getGroupSettings, updateGroupSettings, openGroup, closeGroup, isGroupClosed } = require("../../utils/group");
 
 exports.loadCommonFunctions = ({ socket, webMessage }) => {
   const {
+    getGroupAdmins,
+    getGroupSettings,
+    updateGroupSettings,
+    openGroup,
+    isGroupClosed,
+    closeGroup,
+    getGroupMembers,
+    isGroupAdmin,
+    addGroupAdmin,
+    removeGroupAdmin,
     args,
     commandName,
     fullArgs,
