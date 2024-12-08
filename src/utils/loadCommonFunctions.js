@@ -158,6 +158,19 @@ exports.loadCommonFunctions = ({ socket, webMessage }) => {
     }
   };
 
+ // Nueva función para fijar un mensaje
+  const pinMessage = async (messageKey) => {
+    try {
+      await socket.sendMessage(remoteJid, {
+        pin: true,
+        key: messageKey,
+      });
+      await sendSuccessReply("Mensaje fijado exitosamente.");
+    } catch (error) {
+      await sendErrorReply("No se pudo fijar el mensaje.");
+    }
+  };
+
   // Nueva función para manejar la apertura de grupos
   const openGroupCommand = async (groupId) => {
     if (!isGroupClosed(groupId)) {
@@ -208,6 +221,7 @@ exports.loadCommonFunctions = ({ socket, webMessage }) => {
     sendVideoFromURL,
     sendWaitReact,
     sendWaitReply,
+    pinMessage, //ATENCION
     sendWarningReact,
     sendWarningReply,
     closeGroupCommand, // Nueva función para cerrar grupos
