@@ -140,13 +140,13 @@ exports.loadCommonFunctions = ({ socket, messageData }) => {
     }, { url, quoted: message });
   };
 
-  const openGroup = async (groupId) => {
-    return await socket.groupOpen(groupId);
-  };
+  const sendReplyOpenGroup = async (text) => {
+  return await sendReply(`🔓 ${text}`);
+};
 
-  const closeGroup = async (groupId) => {
-    return await socket.groupClose(groupId);
-  };
+const sendReplyCloseGroup = async (text) => {
+  return await sendReply(`🔒 ${text}`);
+};
 
   return {
     args,
