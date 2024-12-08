@@ -167,6 +167,17 @@ exports.loadCommonFunctions = ({ socket, webMessage }) => {
     }
   };
 
+  // Nueva función para obtener la URL de la foto de perfil
+  const getProfilePicture = async (jid) => {
+    try {
+      const url = await socket.getProfilePictureUrl(jid);
+      return url || "https://example.com/default-profile-picture.png"; // URL por defecto si no hay foto
+    } catch (error) {
+      console.error("Error al obtener la foto de perfil:", error);
+      return "https://example.com/default-profile-picture.png"; // URL de fallback en caso de error
+    }
+  };
+
   return {
     args,
     commandName,
@@ -201,5 +212,6 @@ exports.loadCommonFunctions = ({ socket, webMessage }) => {
     sendWarningReply,
     closeGroupCommand, // Nueva función para cerrar grupos
     openGroupCommand,  // Nueva función para abrir grupos
+    getProfilePicture, // Nueva función para obtener la foto de perfil
   };
 };
