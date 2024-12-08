@@ -1,6 +1,5 @@
 const { PREFIX } = require("../../config");
 const { InvalidParameterError } = require("../../errors/InvalidParameterError");
-const { getProfileImageData } = require("../services/baileys");
 
 module.exports = {
   name: "profilepic",
