@@ -12,7 +12,8 @@ module.exports = {
 
     await sendReact("👻");
 
-    await sendText(`👻 𝙺𝚛𝚊𝚖𝚙𝚞𝚜.𝚋𝚘𝚝 👻
-      𝙷𝚎 𝚕𝚕𝚊𝚖𝚊𝚍𝚘 𝚊 𝚝𝚘𝚍𝚘𝚜!\n\n${fullArgs}`, mentions);
+    await sendText(`👻 𝙺𝚛𝚊𝚖𝚙𝚞𝚜> ╤╧╤╧╤ NOTIFICACION ╤╧╤╧╤
+𝖴𝗇 𝗔𝗱𝗺𝗶𝗻 𝗁𝖺 𝖼𝗈𝗇𝗏𝗈𝖼𝖺𝖽𝗈 𝖺 𝗍𝗈𝖽𝗈𝗌 𝗅𝗈𝗌 𝙢𝙞𝙚𝙢𝙗𝙧𝙤𝙨 𝘥𝘦𝘭 𝘨𝘳𝘶𝘱𝘰
+> 🄺🅁🄰🄼🄿🅄🅂 ᵇᵒᵗ\n\n${fullArgs}`, mentions);
   },
 };
