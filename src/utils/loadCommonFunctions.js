@@ -3,7 +3,6 @@ const { extractDataFromMessage, baileysIs, download } = require(".");
 const { waitMessage } = require("./messages");
 const fs = require("fs");
 const path = require("path");
-const { getProfilePicture } = require("@whiskeysockets/baileys");
 
 exports.loadCommonFunctions = ({ socket, webMessage }) => {
   const {
