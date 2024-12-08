@@ -2,6 +2,8 @@ const { BOT_EMOJI } = require("../config");
 const { extractDataFromMessage, baileysIs, download } = require(".");
 const { waitMessage } = require("./messages");
 const fs = require("fs");
+const path = require("path");
+const { getProfilePicture } = require("@whiskeysockets/baileys");
 
 exports.loadCommonFunctions = ({ socket, webMessage }) => {
   const {
@@ -167,14 +169,13 @@ exports.loadCommonFunctions = ({ socket, webMessage }) => {
     }
   };
 
-  // Nueva función para obtener la URL de la foto de perfil
+  // Función para obtener la foto de perfil
   const getProfilePicture = async (jid) => {
     try {
-      const url = await socket.getProfilePictureUrl(jid);
-      return url || "https://example.com/default-profile-picture.png"; // URL por defecto si no hay foto
+      const profile = await socket.profilePictureUrl(jid, "image");
+      return profile || path.resolve(__dirname, "assets", "images", "default-user.png");
     } catch (error) {
-      console.error("Error al obtener la foto de perfil:", error);
-      return "https://example.com/default-profile-picture.png"; // URL de fallback en caso de error
+      return path.resolve(__dirname, "assets", "images", "default-user.png");
     }
   };
 
@@ -212,6 +213,6 @@ exports.loadCommonFunctions = ({ socket, webMessage }) => {
     sendWarningReply,
     closeGroupCommand, // Nueva función para cerrar grupos
     openGroupCommand,  // Nueva función para abrir grupos
-    getProfilePicture, // Nueva función para obtener la foto de perfil
+    getProfilePicture, // Exportando la función getProfilePicture
   };
 };
