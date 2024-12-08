@@ -15,8 +15,8 @@ module.exports = {
     sendText,
     sendReact,
     remoteJid,
-    userJid,
-    replyJid, // Este es el JID del mensaje respondido
+    userJid, // ID del usuario que está enviando el mensaje
+    replyJid, // JID del mensaje respondido
   }) => {
     // Verifica si el mensaje tiene una respuesta o menciona a un usuario
     const replyMessage = webMessage?.quotedMessage;
@@ -26,7 +26,7 @@ module.exports = {
 
     if (replyMessage) {
       // Si es una respuesta, obtenemos el JID del usuario al que se respondió
-      targetJid = replyJid;  // Aquí estamos usando el JID de la respuesta, tal como en ban
+      targetJid = replyJid;  // Usamos el JID de la persona que fue mencionada en la respuesta
     } else if (mentionedJids && mentionedJids.length > 0) {
       // Si se menciona a un usuario, usamos el primer JID mencionado
       targetJid = mentionedJids[0];
