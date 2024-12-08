@@ -3,8 +3,8 @@ const { extractDataFromMessage, baileysIs, download } = require(".");
 const { waitMessage } = require("./messages");
 const fs = require("fs");
 
-exports.loadCommonFunctions = ({ socket, messageData }) => {
-  const { message } = messageData;
+exports.loadCommonFunctions = ({ socket, messageData: initialMessageData }) => {
+  const { message } = initialMessageData;  // Utilizamos initialMessageData para evitar conflicto con 'messageData' dentro de la función
   const {
     args,
     commandName,
@@ -14,9 +14,7 @@ exports.loadCommonFunctions = ({ socket, messageData }) => {
     prefix,
     remoteJid,
     replyJid,
-    socket,
     userJid,
-    messageData,
   } = extractDataFromMessage(message);
 
   if (!remoteJid) {
@@ -141,12 +139,12 @@ exports.loadCommonFunctions = ({ socket, messageData }) => {
   };
 
   const sendReplyOpenGroup = async (text) => {
-  return await sendReply(`🔓 ${text}`);
-};
+    return await sendReply(`🔓 ${text}`);
+  };
 
-const sendReplyCloseGroup = async (text) => {
-  return await sendReply(`🔒 ${text}`);
-};
+  const sendReplyCloseGroup = async (text) => {
+    return await sendReply(`🔒 ${text}`);
+  };
 
   return {
     args,
