@@ -6,7 +6,6 @@ const fs = require("fs");
 exports.loadCommonFunctions = ({ socket, webMessage }) => {
   const {
     args,
-    message,
     commandName,
     fullArgs,
     fullMessage,
