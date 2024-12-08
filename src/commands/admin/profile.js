@@ -1,4 +1,4 @@
-const { getProfileImageData } = require("../services/baileys");
+const { getProfileImageData } = require("../../services/baileys");
 const { onlyNumbers } = require("../utils");
 
 module.exports = {
