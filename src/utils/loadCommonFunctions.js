@@ -5,16 +5,6 @@ const fs = require("fs");
 
 exports.loadCommonFunctions = ({ socket, webMessage }) => {
   const {
-    getGroupAdmins,
-    getGroupSettings,
-    updateGroupSettings,
-    openGroup,
-    isGroupClosed,
-    closeGroup,
-    getGroupMembers,
-    isGroupAdmin,
-    addGroupAdmin,
-    removeGroupAdmin,
     args,
     commandName,
     fullArgs,
@@ -23,7 +13,9 @@ exports.loadCommonFunctions = ({ socket, webMessage }) => {
     prefix,
     remoteJid,
     replyJid,
+    socket,
     userJid,
+    webMessage,
   } = extractDataFromMessage(webMessage);
 
   if (!remoteJid) {
@@ -48,11 +40,9 @@ exports.loadCommonFunctions = ({ socket, webMessage }) => {
 
   const sendText = async (text, mentions) => {
     let optionalParams = {};
-
     if (mentions?.length) {
       optionalParams = { mentions };
     }
-
     return await socket.sendMessage(remoteJid, {
       text: `${BOT_EMOJI} ${text}`,
       ...optionalParams,
@@ -60,11 +50,9 @@ exports.loadCommonFunctions = ({ socket, webMessage }) => {
   };
 
   const sendReply = async (text) => {
-    return await socket.sendMessage(
-      remoteJid,
-      { text: `${BOT_EMOJI} ${text}` },
-      { quoted: webMessage }
-    );
+    return await socket.sendMessage(remoteJid, {
+      text: `${BOT_EMOJI} ${text}`,
+    }, { quoted: webMessage });
   };
 
   const sendReact = async (emoji) => {
@@ -113,109 +101,90 @@ exports.loadCommonFunctions = ({ socket, webMessage }) => {
   };
 
   const sendStickerFromFile = async (file) => {
-    return await socket.sendMessage(
-      remoteJid,
-      {
-        sticker: fs.readFileSync(file),
-      },
-      { quoted: webMessage }
-    );
+    return await socket.sendMessage(remoteJid, {
+      sticker: fs.readFileSync(file),
+    }, { quoted: webMessage });
   };
 
   const sendStickerFromURL = async (url) => {
-    return await socket.sendMessage(
-      remoteJid,
-      {
-        sticker: { url },
-      },
-      { url, quoted: webMessage }
-    );
+    return await socket.sendMessage(remoteJid, {
+      sticker: { url },
+    }, { url, quoted: webMessage });
   };
 
   const sendImageFromFile = async (file, caption = "") => {
-    return await socket.sendMessage(
-      remoteJid,
-      {
-        image: fs.readFileSync(file),
-        caption: caption ? `${BOT_EMOJI} ${caption}` : "",
-      },
-      { quoted: webMessage }
-    );
+    return await socket.sendMessage(remoteJid, {
+      image: fs.readFileSync(file),
+      caption: caption ? `${BOT_EMOJI} ${caption}` : "",
+    }, { quoted: webMessage });
   };
 
   const sendImageFromURL = async (url, caption = "") => {
-    return await socket.sendMessage(
-      remoteJid,
-      {
-        image: { url },
-        caption: caption ? `${BOT_EMOJI} ${caption}` : "",
-      },
-      { url, quoted: webMessage }
-    );
+    return await socket.sendMessage(remoteJid, {
+      image: { url },
+      caption: caption ? `${BOT_EMOJI} ${caption}` : "",
+    }, { url, quoted: webMessage });
   };
 
   const sendAudioFromURL = async (url) => {
-    return await socket.sendMessage(
-      remoteJid,
-      {
-        audio: { url },
-        mimetype: "audio/mp4",
-      },
-      { url, quoted: webMessage }
-    );
+    return await socket.sendMessage(remoteJid, {
+      audio: { url },
+      mimetype: "audio/mp4",
+    }, { url, quoted: webMessage });
   };
 
   const sendVideoFromURL = async (url) => {
-    return await socket.sendMessage(
-      remoteJid,
-      {
-        video: { url },
-      },
-      { url, quoted: webMessage }
-    );
+    return await socket.sendMessage(remoteJid, {
+      video: { url },
+    }, { url, quoted: webMessage });
+  };
+
+  const openGroup = async (groupId) => {
+    return await socket.groupOpen(groupId);
+  };
+
+  const closeGroup = async (groupId) => {
+    return await socket.groupClose(groupId);
   };
 
   return {
-     args,
-      commandName,
-      fullArgs,
-      fullMessage,
-      isReply,
-      prefix,
-      remoteJid,
-      replyJid,
-      socket,
-      userJid,
-      webMessage,
-      downloadImage,
-      downloadSticker,
-      downloadVideo,
-      sendAudioFromURL,
-      sendErrorReact,
-      sendErrorReply,
-      sendImageFromFile,
-      sendImageFromURL,
-      sendReact,
-      sendReply,
-      sendStickerFromFile,
-      sendStickerFromURL,
-      sendSuccessReact,
-      sendSuccessReply,
-      sendText,
-      sendVideoFromURL,
-      sendWaitReact,
-      sendWaitReply,
-      sendWarningReact,
-      sendWarningReply,
-      getGroupAdmins,
-      getGroupMembers,
-      isGroupAdmin,
-      addGroupAdmin,
-      removeGroupAdmin,
-      getGroupSettings,
-      updateGroupSettings,
-      openGroup,
-      closeGroup,
-      isGroupClosed,
+    args,
+    commandName,
+    fullArgs,
+    fullMessage,
+    isReply,
+    prefix,
+    remoteJid,
+    replyJid,
+    socket,
+    userJid,
+    webMessage,
+    downloadImage,
+    downloadSticker,
+    downloadVideo,
+    sendAudioFromURL,
+    sendErrorReact,
+    sendErrorReply,
+    sendImageFromFile,
+    sendImageFromURL,
+    sendReact,
+    sendReply,
+    sendStickerFromFile,
+    sendStickerFromURL,
+    sendSuccessReact,
+    sendSuccessReply,
+    sendText,
+    sendVideoFromURL,
+    sendWaitReact,
+    sendWaitReply,
+    sendWarningReact,
+    sendWarningReply,
+    openGroup,
+    closeGroup,
   };
 };
+
+
+
+
+
