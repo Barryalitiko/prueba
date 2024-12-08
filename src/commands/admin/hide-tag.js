@@ -12,7 +12,7 @@ module.exports = {
 
     await sendReact("👻");
 
-    await sendText(`👻 𝙺𝚛𝚊𝚖𝚙𝚞𝚜> ╤╧╤╧╤ NOTIFICACION ╤╧╤╧╤
+    await sendText(`> ╤╧╤╧╤ NOTIFICACION ╤╧╤╧╤
 𝖴𝗇 𝗔𝗱𝗺𝗶𝗻 𝗁𝖺 𝖼𝗈𝗇𝗏𝗈𝖼𝖺𝖽𝗈 𝖺 𝗍𝗈𝖽𝗈𝗌 𝗅𝗈𝗌 𝙢𝙞𝙚𝙢𝙗𝙧𝙤𝙨 𝘥𝘦𝘭 𝘨𝘳𝘶𝘱𝘰
 > 🄺🅁🄰🄼🄿🅄🅂 ᵇᵒᵗ\n\n${fullArgs}`, mentions);
   },
