@@ -1,4 +1,8 @@
-const { checkPermission } = require("../../middlewares/checkpermission"); // Ajusta la ruta según sea necesario
+const { PREFIX } = require("../../config");
+const { InvalidParameterError } = require("../../errors/InvalidParameterError");
+const { DangerError } = require("../../errors/DangerError");
+const { checkPermission } = require("../../middlewares/checkpermission");
+const { isGroupClosed, openGroup, closeGroup } = require("../../utils/database"); // Importa las funciones necesarias
 
 module.exports = {
   name: "grupo",
