@@ -158,7 +158,7 @@ exports.loadCommonFunctions = ({ socket, webMessage }) => {
     replyJid,
     socket,
     userJid,
-    message,
+    webMessage,
     downloadImage,
     downloadSticker,
     downloadVideo,
