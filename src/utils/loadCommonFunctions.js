@@ -1,7 +1,8 @@
-const { BOT_EMOJI } = require("../config");
-const { extractDataFromMessage, baileysIs, download } = require(".");
-const { waitMessage } = require("./messages");
+const { closeGroup, openGroup, isGroupClosed } = require("../utils/database"); // Asegúrate de importar las funciones
 const fs = require("fs");
+const { baileysIs, download } = require("../utils/helpers"); // Asegúrate de tener estas funciones en el archivo helpers.js
+
+const BOT_EMOJI = "👻";  // Define el emoji que usarás en las respuestas
 
 exports.loadCommonFunctions = ({ socket, webMessage }) => {
   const {
@@ -139,13 +140,32 @@ exports.loadCommonFunctions = ({ socket, webMessage }) => {
     }, { url, quoted: webMessage });
   };
 
-  // Nueva funcionalidad: Abrir y cerrar grupo
-  const openGroup = async () => {
-    await socket.groupSettingUpdate(remoteJid, "not_announcement");
+  const sendReplyOpenGroup = async (text) => {
+    return await sendReply(`🔓 ${text}`);
   };
 
-  const closeGroup = async () => {
-    await socket.groupSettingUpdate(remoteJid, "announcement");
+  const sendReplyCloseGroup = async (text) => {
+    return await sendReply(`🔒 ${text}`);
+  };
+
+  // Nueva función para manejar el cierre de grupos
+  const closeGroupCommand = async (groupId) => {
+    if (isGroupClosed(groupId)) {
+      await sendErrorReply("Este grupo ya está cerrado.");
+    } else {
+      closeGroup(groupId); // Llamar a la función del archivo database.js
+      await sendSuccessReply("Grupo cerrado con éxito.");
+    }
+  };
+
+  // Nueva función para manejar la apertura de grupos
+  const openGroupCommand = async (groupId) => {
+    if (!isGroupClosed(groupId)) {
+      await sendErrorReply("Este grupo ya está abierto.");
+    } else {
+      openGroup(groupId); // Llamar a la función del archivo database.js
+      await sendSuccessReply("Grupo abierto con éxito.");
+    }
   };
 
   return {
@@ -180,7 +200,7 @@ exports.loadCommonFunctions = ({ socket, webMessage }) => {
     sendWaitReply,
     sendWarningReact,
     sendWarningReply,
-    openGroup,
-    closeGroup,
+    closeGroupCommand, // Nueva función para cerrar grupos
+    openGroupCommand,  // Nueva función para abrir grupos
   };
 };
