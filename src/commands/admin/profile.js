@@ -1,5 +1,5 @@
-const { getProfileImageData } = require("../../services/baileys");
-const { onlyNumbers } = require("../utils");
+const { PREFIX } = require("../../config");
+const { InvalidParameterError } = require("../../errors/InvalidParameterError");
 
 module.exports = {
   name: "profilepic",
