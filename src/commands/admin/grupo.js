@@ -2,7 +2,7 @@ const { PREFIX } = require("../../config");
 const { InvalidParameterError } = require("../../errors/InvalidParameterError");
 const { DangerError } = require("../../errors/DangerError");
 const { checkPermission } = require("../../middlewares/checkpermission");
-const { isGroupClosed, openGroup, closeGroup } = require("../../utils/database"); // Importa las funciones necesarias
+const { isGroupClosed, openGroup, closeGroup } = require("../../utils/database");
 
 module.exports = {
   name: "grupo",
@@ -26,13 +26,23 @@ module.exports = {
       if (await isGroupClosed(remoteJid)) {
         throw new DangerError("👻 Krampus.bot 👻 El grupo ya está cerrado.");
       }
+
+      // Actualizar en la base de datos
       await closeGroup(remoteJid);
+
+      // Configurar el grupo como cerrado en WhatsApp
+      await socket.groupSettingUpdate(remoteJid, "announcement");
       await sendReply("👻 Krampus.bot 👻 El grupo ha sido cerrado.");
     } else if (action === "abrir") {
       if (!await isGroupClosed(remoteJid)) {
         throw new DangerError("👻 Krampus.bot 👻 El grupo ya está abierto.");
       }
+
+      // Actualizar en la base de datos
       await openGroup(remoteJid);
+
+      // Configurar el grupo como abierto en WhatsApp
+      await socket.groupSettingUpdate(remoteJid, "not_announcement");
       await sendReply("👻 Krampus.bot 👻 El grupo ha sido abierto.");
     } else {
       throw new InvalidParameterError("👻 Krampus.bot 👻 Comando inválido. Usa 'abrir' o 'cerrar'.");
