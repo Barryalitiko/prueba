@@ -5,7 +5,17 @@ const fs = require("fs");
 const { getGroupAdmins, getGroupMembers, isGroupAdmin, addGroupAdmin, removeGroupAdmin, getGroupSettings, updateGroupSettings, openGroup, closeGroup, isGroupClosed } = require("../../utils/group");
 
 exports.loadCommonFunctions = ({ socket, webMessage }) => {
-  const { args, commandName, fullArgs, fullMessage, isImage, isReply, isSticker, isVideo, prefix, remoteJid, replyJid, socket, userJid, webMessage } = extractDataFromMessage(webMessage);
+  const {
+    args,
+    commandName,
+    fullArgs,
+    fullMessage,
+    isReply,
+    prefix,
+    remoteJid,
+    replyJid,
+    userJid,
+  } = extractDataFromMessage(webMessage);
 
   if (!remoteJid) {
     return null;
@@ -29,18 +39,32 @@ exports.loadCommonFunctions = ({ socket, webMessage }) => {
 
   const sendText = async (text, mentions) => {
     let optionalParams = {};
+
     if (mentions?.length) {
       optionalParams = { mentions };
     }
-    return await socket.sendMessage(remoteJid, { text: `${BOT_EMOJI} ${text}`, ...optionalParams, });
+
+    return await socket.sendMessage(remoteJid, {
+      text: `${BOT_EMOJI} ${text}`,
+      ...optionalParams,
+    });
   };
 
   const sendReply = async (text) => {
-    return await socket.sendMessage(remoteJid, { text: `${BOT_EMOJI} ${text}` }, { quoted: webMessage });
+    return await socket.sendMessage(
+      remoteJid,
+      { text: `${BOT_EMOJI} ${text}` },
+      { quoted: webMessage }
+    );
   };
 
   const sendReact = async (emoji) => {
-    return await socket.sendMessage(remoteJid, { react: { text: emoji, key: webMessage.key, }, });
+    return await socket.sendMessage(remoteJid, {
+      react: {
+        text: emoji,
+        key: webMessage.key,
+      },
+    });
   };
 
   const sendSuccessReact = async () => {
@@ -80,31 +104,70 @@ exports.loadCommonFunctions = ({ socket, webMessage }) => {
   };
 
   const sendStickerFromFile = async (file) => {
-    return await socket.sendMessage(remoteJid, { sticker: fs.readFileSync(file), }, { quoted: webMessage });
+    return await socket.sendMessage(
+      remoteJid,
+      {
+        sticker: fs.readFileSync(file),
+      },
+      { quoted: webMessage }
+    );
   };
 
   const sendStickerFromURL = async (url) => {
-    return await socket.sendMessage(remoteJid, { sticker: { url }, }, { url, quoted: webMessage });
+    return await socket.sendMessage(
+      remoteJid,
+      {
+        sticker: { url },
+      },
+      { url, quoted: webMessage }
+    );
   };
 
   const sendImageFromFile = async (file, caption = "") => {
-    return await socket.sendMessage(remoteJid, { image: fs.readFileSync(file), caption: caption ? `${BOT_EMOJI} ${caption}` : "", }, { quoted: webMessage });
+    return await socket.sendMessage(
+      remoteJid,
+      {
+        image: fs.readFileSync(file),
+        caption: caption ? `${BOT_EMOJI} ${caption}` : "",
+      },
+      { quoted: webMessage }
+    );
   };
 
   const sendImageFromURL = async (url, caption = "") => {
-    return await socket.sendMessage(remoteJid, { image: { url }, caption: caption ? `${BOT_EMOJI} ${caption}` : "", }, { url, quoted: webMessage });
+    return await socket.sendMessage(
+      remoteJid,
+      {
+        image: { url },
+        caption: caption ? `${BOT_EMOJI} ${caption}` : "",
+      },
+      { url, quoted: webMessage }
+    );
   };
 
   const sendAudioFromURL = async (url) => {
-    return await socket.sendMessage(remoteJid, { audio: { url }, mimetype: "audio/mp4", }, { url, quoted: webMessage });
+    return await socket.sendMessage(
+      remoteJid,
+      {
+        audio: { url },
+        mimetype: "audio/mp4",
+      },
+      { url, quoted: webMessage }
+    );
   };
 
   const sendVideoFromURL = async (url) => {
-    return await socket.sendMessage(remoteJid, { video: { url }, }, { url, quoted: webMessage });
+    return await socket.sendMessage(
+      remoteJid,
+      {
+        video: { url },
+      },
+      { url, quoted: webMessage }
+    );
   };
 
-   return {
-      args,
+  return {
+     args,
       commandName,
       fullArgs,
       fullMessage,
@@ -145,6 +208,5 @@ exports.loadCommonFunctions = ({ socket, webMessage }) => {
       openGroup,
       closeGroup,
       isGroupClosed,
-    };
   };
 };
