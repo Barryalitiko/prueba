@@ -14,7 +14,7 @@ exports.loadCommonFunctions = ({ socket, webMessage }) => {
     remoteJid,
     replyJid,
     userJid,
-  } = extractDataFromMessage(message);
+  } = extractDataFromMessage(webMessage);
 
   if (!remoteJid) {
     return null;
