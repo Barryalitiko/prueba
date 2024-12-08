@@ -148,16 +148,23 @@ exports.loadCommonFunctions = ({ socket, webMessage }) => {
     return await sendReply(`🔒 ${text}`);
   };
 
-  // Nueva función para fijar un mensaje
-  const pinMessage = async (messageKey) => {
-    try {
-      await socket.sendMessage(remoteJid, {
-        pin: true,
-        key: messageKey,
-      });
-      await sendSuccessReply("Mensaje fijado exitosamente.");
-    } catch (error) {
-      await sendErrorReply("No se pudo fijar el mensaje.");
+  // Nueva función para manejar el cierre de grupos
+  const closeGroupCommand = async (groupId) => {
+    if (isGroupClosed(groupId)) {
+      await sendErrorReply("Este grupo ya está cerrado.");
+    } else {
+      closeGroup(groupId); // Llamar a la función del archivo database.js
+      await sendSuccessReply("Grupo cerrado con éxito.");
+    }
+  };
+
+  // Nueva función para manejar la apertura de grupos
+  const openGroupCommand = async (groupId) => {
+    if (!isGroupClosed(groupId)) {
+      await sendErrorReply("Este grupo ya está abierto.");
+    } else {
+      openGroup(groupId); // Llamar a la función del archivo database.js
+      await sendSuccessReply("Grupo abierto con éxito.");
     }
   };
 
@@ -203,9 +210,8 @@ exports.loadCommonFunctions = ({ socket, webMessage }) => {
     sendWaitReply,
     sendWarningReact,
     sendWarningReply,
-    closeGroupCommand,
-    openGroupCommand,
-    getProfilePicture,
-    pinMessage, // Añadimos la función para fijar el mensaje
+    closeGroupCommand, // Nueva función para cerrar grupos
+    openGroupCommand,  // Nueva función para abrir grupos
+    getProfilePicture, // Exportando la función getProfilePicture
   };
 };
