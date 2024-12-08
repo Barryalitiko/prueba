@@ -20,7 +20,7 @@ exports.loadCommonFunctions = ({ socket, webMessage }) => {
     return null;
   }
 
- const isImage = baileysIs(webMessage, "image");
+  const isImage = baileysIs(webMessage, "image");
   const isVideo = baileysIs(webMessage, "video");
   const isSticker = baileysIs(webMessage, "sticker");
 
@@ -28,11 +28,11 @@ exports.loadCommonFunctions = ({ socket, webMessage }) => {
     return await download(webMessage, fileName, "image", "png");
   };
 
- const downloadSticker = async (webMessage, fileName) => {
+  const downloadSticker = async (webMessage, fileName) => {
     return await download(webMessage, fileName, "sticker", "webp");
   };
 
-   const downloadVideo = async (webMessage, fileName) => {
+  const downloadVideo = async (webMessage, fileName) => {
     return await download(webMessage, fileName, "video", "mp4");
   };
 
@@ -139,12 +139,13 @@ exports.loadCommonFunctions = ({ socket, webMessage }) => {
     }, { url, quoted: webMessage });
   };
 
-  const sendReplyOpenGroup = async (text) => {
-    return await sendReply(`🔓 ${text}`);
+  // Nueva funcionalidad: Abrir y cerrar grupo
+  const openGroup = async () => {
+    await socket.groupSettingUpdate(remoteJid, "not_announcement");
   };
 
-  const sendReplyCloseGroup = async (text) => {
-    return await sendReply(`🔒 ${text}`);
+  const closeGroup = async () => {
+    await socket.groupSettingUpdate(remoteJid, "announcement");
   };
 
   return {
