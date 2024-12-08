@@ -1,5 +1,6 @@
 const { PREFIX } = require("../../config");
 const { InvalidParameterError } = require("../../errors/InvalidParameterError");
+const { getProfileImageData } = require("../services/baileys");
 
 module.exports = {
   name: "profilepic",
@@ -9,19 +10,15 @@ module.exports = {
   handle: async ({ webMessage, socket, sendText, sendReact, remoteJid }) => {
     // Verifica si el mensaje tiene una respuesta
     const replyMessage = webMessage?.quotedMessage;
-
     if (!replyMessage) {
       await sendText("⚠️ Para obtener la foto de perfil, por favor responde a un mensaje.");
       return;
     }
-
     // Extraemos el JID (identificador único) del usuario al que se respondió
     const userJid = replyMessage?.sender?.user;
-
     try {
       // Obtenemos la foto de perfil del usuario
       const { buffer, profileImage } = await getProfileImageData(socket, userJid);
-
       // Enviar la foto de perfil
       await socket.sendMessage(remoteJid, {
         image: buffer,
