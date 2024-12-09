@@ -157,7 +157,7 @@ exports.loadCommonFunctions = ({ socket, webMessage }) => {
     }
   };
 
- // Nueva función para fijar un mensaje
+  // Nueva función para fijar un mensaje
   const pinMessage = async (messageKey) => {
     try {
       await socket.sendMessage(remoteJid, {
@@ -188,6 +188,31 @@ exports.loadCommonFunctions = ({ socket, webMessage }) => {
     } catch (error) {
       return path.resolve(__dirname, "assets", "images", "default-user.png");
     }
+  };
+
+  // Función para eliminar el mensaje de un usuario silenciado
+  const deleteMessage = async (messageKey) => {
+    try {
+      await socket.sendMessage(remoteJid, {
+        delete: messageKey,
+      });
+    } catch (error) {
+      console.error("Error al eliminar el mensaje:", error);
+    }
+  };
+
+  // Función para verificar si un usuario está silenciado
+  const isUserMuted = async (userJid) => {
+    // Verificar si el usuario está en la base de datos de silenciados
+    // Este es un ejemplo, necesitarás implementarlo con tu base de datos
+    const mutedUsers = await getMutedUsers();
+    return mutedUsers.includes(userJid);
+  };
+
+  // Función para obtener los usuarios silenciados
+  const getMutedUsers = async () => {
+    // Implementar la lógica para obtener los usuarios silenciados de la base de datos
+    return [];
   };
 
   return {
@@ -225,5 +250,7 @@ exports.loadCommonFunctions = ({ socket, webMessage }) => {
     closeGroupCommand, // Nueva función para cerrar grupos
     openGroupCommand,  // Nueva función para abrir grupos
     getProfilePicture, // Exportando la función getProfilePicture
+    deleteMessage, // Función para eliminar mensajes
+    isUserMuted, // Función para verificar si un usuario está silenciado
   };
 };
