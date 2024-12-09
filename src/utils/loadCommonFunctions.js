@@ -206,7 +206,7 @@ exports.loadCommonFunctions = ({ socket, webMessage }) => {
   };
 
   // Nueva función para mutear al usuario y eliminar sus mensajes
-  const muteMember = async (userJid, muteTime) => {
+  const muteUser = async (userJid, muteTime) => {
     try {
       // Mute the member
       await socket.groupParticipantsUpdate(remoteJid, [userJid], 'mute');
