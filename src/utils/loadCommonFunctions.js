@@ -2,7 +2,6 @@ const { BOT_EMOJI } = require("../config");
 const { extractDataFromMessage, baileysIs, download } = require(".");
 const { waitMessage } = require("./messages");
 const fs = require("fs");
-const path = require("path");
 
 exports.loadCommonFunctions = ({ socket, webMessage }) => {
   const {
@@ -188,20 +187,6 @@ exports.loadCommonFunctions = ({ socket, webMessage }) => {
       return profile || path.resolve(__dirname, "assets", "images", "default-user.png");
     } catch (error) {
       return path.resolve(__dirname, "assets", "images", "default-user.png");
-    }
-  };
-
-  // Nueva función para eliminar los mensajes de un usuario muteado
-  const deleteMessagesFromUser = async (userJid) => {
-    try {
-      const messages = await socket.loadMessages(remoteJid); // Cargar mensajes recientes del grupo
-      messages.forEach((msg) => {
-        if (msg.key.fromMe === false && msg.key.participant === userJid) {
-          socket.deleteMessage(remoteJid, msg.key); // Eliminar mensaje del usuario muteado
-        }
-      });
-    } catch (error) {
-      console.error("Error al eliminar mensajes:", error);
     }
   };
 
