@@ -8,6 +8,7 @@ const NOT_WELCOME_GROUPS_FILE = "not-welcome-groups";
 const INACTIVE_AUTO_RESPONDER_GROUPS_FILE = "inactive-auto-responder-groups";
 const ANTI_LINK_GROUPS_FILE = "anti-link-groups";
 const CLOSED_GROUPS_FILE = "closed-groups";
+const MUTED_USERS_FILE = "muted-users";
 
 function createIfNotExists(fullPath) {
   if (!fs.existsSync(fullPath)) {
@@ -29,6 +30,14 @@ function writeJSON(jsonFile, data) {
   createIfNotExists(fullPath);
 
   fs.writeFileSync(fullPath, JSON.stringify(data));
+}
+// borrar despues
+function getMutedUsers() {
+  return readJSON(MUTED_USERS_FILE);
+}
+
+function writeMutedUsers(data) {
+  writeJSON(MUTED_USERS_FILE, data);
 }
 
 exports.activateGroup = (groupId) => {
@@ -227,4 +236,67 @@ exports.isGroupClosed = (groupId) => {
   const filename = CLOSED_GROUPS_FILE;
   const closedGroups = readJSON(filename);
   return closedGroups.includes(groupId); // Retorna true si el grupo está cerrado
+};
+
+
+
+// borrar despues 
+
+
+
+
+exports.muteMember = (groupId, userJid, muteTimeInMinutes) => {
+  const mutedUsers = getMutedUsers();
+
+  // Verificar si el usuario ya está muteado
+  const existingMute = mutedUsers.find(
+    (mute) => mute.userJid === userJid && mute.groupId === groupId
+  );
+
+  if (existingMute) {
+    return; // El usuario ya está muteado
+  }
+
+  const muteExpiration = Date.now() + muteTimeInMinutes * 60000; // Calcular el tiempo de expiración
+
+  mutedUsers.push({
+    groupId,
+    userJid,
+    muteExpiration,
+  });
+
+  writeMutedUsers(mutedUsers);
+};
+
+exports.unmuteMember = (groupId, userJid) => {
+  const mutedUsers = getMutedUsers();
+
+  const index = mutedUsers.findIndex(
+    (mute) => mute.userJid === userJid && mute.groupId === groupId
+  );
+
+  if (index !== -1) {
+    mutedUsers.splice(index, 1); // Eliminar al usuario del listado de muteados
+    writeMutedUsers(mutedUsers);
+  }
+};
+
+exports.isMuted = (groupId, userJid) => {
+  const mutedUsers = getMutedUsers();
+
+  const mute = mutedUsers.find(
+    (mute) => mute.userJid === userJid && mute.groupId === groupId
+  );
+
+  if (!mute) {
+    return false;
+  }
+
+  // Verificar si el tiempo de muteo ha expirado
+  if (mute.muteExpiration <= Date.now()) {
+    this.unmuteMember(groupId, userJid); // Desmutear al usuario si el tiempo ha expirado
+    return false;
+  }
+
+  return true;
 };
