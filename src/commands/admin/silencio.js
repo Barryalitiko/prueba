@@ -1,5 +1,5 @@
 const { PREFIX } = require("../../config");
-const { addMute, isUserMuted, removeMute } = require("../../database");
+const { addMute, isUserMuted, removeMute } = require(../../utils/database");
 const { silence_times } = require("../../utils/database");
 
 module.exports = {
