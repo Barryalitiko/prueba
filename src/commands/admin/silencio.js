@@ -38,7 +38,7 @@ module.exports = {
     }
 
     // Obtener el tiempo de muteo desde el array silence_times
-    const muteDuration = silence_times[muteIndex];
+    const muteDuration = silence_times[muteIndex.toString()];
 
     // Agregar el muteo
     addMute(groupId, userToMute, muteDuration);
