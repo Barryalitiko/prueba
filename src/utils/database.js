@@ -279,3 +279,12 @@ exports.unmuteUser = (userId) => {
     writeJSON(filename, mutedUsers);
   }
 };
+
+exports.checkMute = (userId, message) => {
+  if (isMuted(userId)) {
+    sendWarningReply(`Estás muteado. No puedes enviar mensajes.`);
+    deleteMessage(message);
+    return true;
+  }
+  return false;
+};
