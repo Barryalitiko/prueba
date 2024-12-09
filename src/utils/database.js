@@ -269,3 +269,13 @@ exports.isMuted = (userId) => {
   return expiresAt > now;
 };
 
+exports.unmuteUser = (userId) => {
+  const filename = "muted-users.json";
+  const mutedUsers = readJSON(filename);
+  const userIndex = mutedUsers.findIndex((user) => user.id === userId);
+
+  if (userIndex !== -1) {
+    mutedUsers.splice(userIndex, 1);
+    writeJSON(filename, mutedUsers);
+  }
+};
