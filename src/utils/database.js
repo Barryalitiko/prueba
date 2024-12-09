@@ -253,3 +253,19 @@ exports.addMute = (userId, duration) => {
 
   writeJSON(filename, mutedUsers);
 };
+
+exports.isMuted = (userId) => {
+  const filename = "muted-users.json";
+  const mutedUsers = readJSON(filename);
+  const userIndex = mutedUsers.findIndex((user) => user.id === userId);
+
+  if (userIndex === -1) {
+    return false;
+  }
+
+  const now = new Date();
+  const expiresAt = mutedUsers[userIndex].expiresAt;
+
+  return expiresAt > now;
+};
+
