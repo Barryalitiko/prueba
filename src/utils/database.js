@@ -8,7 +8,7 @@ const NOT_WELCOME_GROUPS_FILE = "not-welcome-groups";
 const INACTIVE_AUTO_RESPONDER_GROUPS_FILE = "inactive-auto-responder-groups";
 const ANTI_LINK_GROUPS_FILE = "anti-link-groups";
 const CLOSED_GROUPS_FILE = "closed-groups";
-const MUTED_USERS_FILE = "muted-users";
+const MUTE_MEMBERS_FILE = "muted-members";
 
 function createIfNotExists(fullPath) {
   if (!fs.existsSync(fullPath)) {
@@ -32,12 +32,10 @@ function writeJSON(jsonFile, data) {
   fs.writeFileSync(fullPath, JSON.stringify(data));
 }
 // borrar despues
-function getMutedUsers() {
-  return readJSON(MUTED_USERS_FILE);
-}
-
-function writeMutedUsers(data) {
-  writeJSON(MUTED_USERS_FILE, data);
+function createIfNotExists(fullPath) {
+    if (!fs.existsSync(fullPath)) {
+        fs.writeFileSync(fullPath, JSON.stringify({}));
+    }
 }
 
 exports.activateGroup = (groupId) => {
@@ -245,58 +243,73 @@ exports.isGroupClosed = (groupId) => {
 
 
 
-exports.muteMember = (groupId, userJid, muteTimeInMinutes) => {
-  const mutedUsers = getMutedUsers();
 
-  // Verificar si el usuario ya está muteado
-  const existingMute = mutedUsers.find(
-    (mute) => mute.userJid === userJid && mute.groupId === groupId
-  );
 
-  if (existingMute) {
-    return; // El usuario ya está muteado
-  }
 
-  const muteExpiration = Date.now() + muteTimeInMinutes * 60000; // Calcular el tiempo de expiración
+// Función para mutear a un miembro con tiempo
+exports.muteMember = (groupId, userId, muteDuration) => {
+    const filename = MUTE_MEMBERS_FILE;
+    const mutedMembers = readJSON(filename);
+    
+    // Verificar si ya existe un grupo
+    if (!mutedMembers[groupId]) {
+        mutedMembers[groupId] = {};
+    }
 
-  mutedUsers.push({
-    groupId,
-    userJid,
-    muteExpiration,
-  });
+    const expireTime = Date.now() + muteDuration * 60000; // Expiración del muteo en milisegundos
 
-  writeMutedUsers(mutedUsers);
+    mutedMembers[groupId][userId] = {
+        expireTime,
+        muteDuration
+    };
+
+    writeJSON(filename, mutedMembers);
 };
 
-exports.unmuteMember = (groupId, userJid) => {
-  const mutedUsers = getMutedUsers();
+// Función para desmutear a un miembro
+exports.unmuteMember = (groupId, userId) => {
+    const filename = MUTE_MEMBERS_FILE;
+    const mutedMembers = readJSON(filename);
 
-  const index = mutedUsers.findIndex(
-    (mute) => mute.userJid === userJid && mute.groupId === groupId
-  );
-
-  if (index !== -1) {
-    mutedUsers.splice(index, 1); // Eliminar al usuario del listado de muteados
-    writeMutedUsers(mutedUsers);
-  }
+    if (mutedMembers[groupId] && mutedMembers[groupId][userId]) {
+        delete mutedMembers[groupId][userId];
+        writeJSON(filename, mutedMembers);
+    }
 };
 
-exports.isMuted = (groupId, userJid) => {
-  const mutedUsers = getMutedUsers();
+// Verificar si un miembro está muteado y si su muteo ha expirado
+exports.isMutedMember = (groupId, userId) => {
+    const filename = MUTE_MEMBERS_FILE;
+    const mutedMembers = readJSON(filename);
 
-  const mute = mutedUsers.find(
-    (mute) => mute.userJid === userJid && mute.groupId === groupId
-  );
+    if (mutedMembers[groupId] && mutedMembers[groupId][userId]) {
+        const member = mutedMembers[groupId][userId];
+        if (Date.now() < member.expireTime) {
+            return true; // El miembro sigue muteado
+        } else {
+            // Desmutear automáticamente si ha expirado el tiempo
+            this.unmuteMember(groupId, userId);
+            return false; // El muteo ha expirado
+        }
+    }
 
-  if (!mute) {
-    return false;
-  }
+    return false; // El miembro no está muteado
+};
 
-  // Verificar si el tiempo de muteo ha expirado
-  if (mute.muteExpiration <= Date.now()) {
-    this.unmuteMember(groupId, userJid); // Desmutear al usuario si el tiempo ha expirado
-    return false;
-  }
-
-  return true;
+// Función para obtener la duración del muteo en minutos
+exports.getMuteDuration = (minutes) => {
+    switch (minutes) {
+        case 1:
+            return 1;
+        case 2:
+            return 2;
+        case 5:
+            return 5;
+        case 10:
+            return 10;
+        case 15:
+            return 15;
+        default:
+            return 1; // Muteo por 1 minuto si no se proporciona un valor válido
+    }
 };
