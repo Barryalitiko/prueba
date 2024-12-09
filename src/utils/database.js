@@ -12,6 +12,16 @@ const MUTE_DATA_FILE = "mute-data"; // Nuevo archivo para almacenar datos de mut
 
 const MAX_MUTE_TIME = 15 * 60 * 1000; // 15 minutos en milisegundos
 
+// Tiempos predeterminados de muteo
+const SILENCE_TIMES = {
+  "0": 0,             // 0: Desmutear
+  "1": 1 * 60 * 1000, // 1: 1 minuto
+  "2": 3 * 60 * 1000, // 2: 3 minutos
+  "3": 5 * 60 * 1000, // 3: 5 minutos
+  "4": 10 * 60 * 1000,// 4: 10 minutos
+  "5": 15 * 60 * 1000,// 5: 15 minutos
+};
+
 function createIfNotExists(fullPath) {
   if (!fs.existsSync(fullPath)) {
     fs.writeFileSync(fullPath, JSON.stringify([]));
@@ -20,17 +30,13 @@ function createIfNotExists(fullPath) {
 
 function readJSON(jsonFile) {
   const fullPath = path.resolve(databasePath, `${jsonFile}.json`);
-
   createIfNotExists(fullPath);
-
   return JSON.parse(fs.readFileSync(fullPath, "utf8"));
 }
 
 function writeJSON(jsonFile, data) {
   const fullPath = path.resolve(databasePath, `${jsonFile}.json`);
-
   createIfNotExists(fullPath);
-
   fs.writeFileSync(fullPath, JSON.stringify(data));
 }
 
@@ -47,6 +53,72 @@ function writeMuteJSON(data) {
   createIfNotExists(fullPath);
   fs.writeFileSync(fullPath, JSON.stringify(data));
 }
+
+// Función para añadir un muteo
+exports.addMute = (groupId, userId, muteKey) => {
+  const muteDuration = SILENCE_TIMES[muteKey];
+
+  if (muteDuration === undefined) {
+    throw new Error("Tiempo de muteo no válido");
+  }
+
+  const muteData = readMuteJSON();
+
+  const existingMute = muteData.find(
+    (entry) => entry.groupId === groupId && entry.userId === userId
+  );
+
+  if (existingMute) {
+    // Si ya está silenciado, actualizamos la duración
+    existingMute.muteDuration = muteDuration;
+    existingMute.muteStartTime = Date.now(); // Actualizamos el tiempo de inicio del muteo
+  } else {
+    // Si no está silenciado, agregamos un nuevo muteo
+    muteData.push({
+      groupId,
+      userId,
+      muteDuration,
+      muteStartTime: Date.now(), // Guardamos el tiempo de inicio del muteo
+    });
+  }
+
+  writeMuteJSON(muteData);
+};
+
+// Función para comprobar si un usuario está silenciado
+exports.isUserMuted = (groupId, userId) => {
+  const muteData = readMuteJSON();
+  const userMute = muteData.find(
+    (entry) => entry.groupId === groupId && entry.userId === userId
+  );
+
+  if (userMute) {
+    const muteEndTime = userMute.muteStartTime + userMute.muteDuration;
+    if (Date.now() > muteEndTime) {
+      // Si el tiempo de muteo ha expirado, eliminamos el muteo
+      this.removeMute(groupId, userId);
+      return false;
+    }
+    return true;
+  }
+
+  return false;
+};
+
+// Función para eliminar el muteo de un usuario
+exports.removeMute = (groupId, userId) => {
+  const muteData = readMuteJSON();
+  const updatedMuteData = muteData.filter(
+    (entry) => entry.groupId !== groupId || entry.userId !== userId
+  );
+
+  writeMuteJSON(updatedMuteData);
+};
+
+// Función para obtener los tiempos predeterminados de muteo
+exports.getSilenceTimes = () => {
+  return SILENCE_TIMES;
+};
 
 exports.activateGroup = (groupId) => {
   const filename = INACTIVE_GROUPS_FILE;
@@ -243,66 +315,47 @@ exports.openGroup = (groupId) => {
 exports.isGroupClosed = (groupId) => {
   const filename = CLOSED_GROUPS_FILE;
   const closedGroups = readJSON(filename);
-  return closedGroups.includes(groupId); // Retorna true si el grupo está cerrado
+    return closedGroups.includes(groupId);
 };
 
-// Funciones para gestionar muteos
-exports.addMute = (groupId, userId, muteDuration) => {
-  // Asegurarse de que la duración no exceda el máximo permitido
-  if (muteDuration > MAX_MUTE_TIME) {
-    muteDuration = MAX_MUTE_TIME; // Establecer al máximo permitido si se excede
+exports.addGroupToMuteList = (groupId, userId) => {
+  const muteList = readMuteJSON();
+
+  if (!muteList[groupId]) {
+    muteList[groupId] = [];
   }
 
-  const muteData = readMuteJSON();
-
-  // Verificar si ya hay un muteo para ese usuario en el grupo
-  const existingMute = muteData.find(
-    (entry) => entry.groupId === groupId && entry.userId === userId
-  );
-
-  if (existingMute) {
-    // Si ya está silenciado, actualizamos la duración
-    existingMute.muteDuration = muteDuration;
-    existingMute.muteStartTime = Date.now(); // Actualizamos el tiempo de inicio del muteo
-  } else {
-    // Si no está silenciado, agregamos un nuevo muteo
-    muteData.push({
-      groupId,
-      userId,
-      muteDuration,
-      muteStartTime: Date.now(), // Guardamos el tiempo de inicio del muteo
-    });
+  if (!muteList[groupId].includes(userId)) {
+    muteList[groupId].push(userId);
   }
 
-  writeMuteJSON(muteData);
+  writeMuteJSON(muteList);
 };
 
-// Función para comprobar si un usuario está silenciado
-exports.isUserMuted = (groupId, userId) => {
-  const muteData = readMuteJSON();
-  const userMute = muteData.find(
-    (entry) => entry.groupId === groupId && entry.userId === userId
-  );
+exports.removeGroupFromMuteList = (groupId, userId) => {
+  const muteList = readMuteJSON();
 
-  if (userMute) {
-    const muteEndTime = userMute.muteStartTime + userMute.muteDuration;
-    if (Date.now() > muteEndTime) {
-      // Si el tiempo de muteo ha expirado, eliminamos el muteo
-      this.removeMute(groupId, userId);
-      return false;
+  if (muteList[groupId]) {
+    const index = muteList[groupId].indexOf(userId);
+
+    if (index !== -1) {
+      muteList[groupId].splice(index, 1);
     }
-    return true;
   }
 
-  return false;
+  writeMuteJSON(muteList);
 };
 
-// Función para eliminar el muteo de un usuario
-exports.removeMute = (groupId, userId) => {
-  const muteData = readMuteJSON();
-  const updatedMuteData = muteData.filter(
-    (entry) => entry.groupId !== groupId || entry.userId !== userId
-  );
+exports.isUserMutedInGroup = (groupId, userId) => {
+  const muteList = readMuteJSON();
+  return muteList[groupId] && muteList[groupId].includes(userId);
+};
 
-  writeMuteJSON(updatedMuteData);
+exports.getMutedUsers = (groupId) => {
+  const muteList = readMuteJSON();
+  return muteList[groupId] || [];
+};
+
+exports.getMutedUsersForAllGroups = () => {
+  return readMuteJSON();
 };
