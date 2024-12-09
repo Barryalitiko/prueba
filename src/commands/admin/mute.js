@@ -1,6 +1,6 @@
 const { PREFIX } = require("../../config");
 const { InvalidParameterError } = require("../../errors/InvalidParameterError");
-const { muteMember, unmuteMember, getMuteDuration } = require("../../utils/database");
+const { muteMember, unmuteMember } = require("../../utils/database");
 
 module.exports = {
   name: "mute",
@@ -23,10 +23,9 @@ module.exports = {
       );
     }
 
-    const duration = getMuteDuration(muteTime);
-    if (muteMember(remoteJid, userJid, duration)) {
+    if (muteMember(remoteJid, userJid, muteTime * 60000)) {
       await sendSuccessReact();
-      await sendReply(`🔇 El usuario @${userJid} ha sido muteado por ${duration} minutos.`);
+      await sendReply(`🔇 El usuario @${userJid} ha sido muteado por ${muteTime} minutos.`);
     } else {
       throw new InvalidParameterError(
         "🚫 No se pudo mutear al usuario."
@@ -34,3 +33,6 @@ module.exports = {
     }
   },
 };
+
+
+
