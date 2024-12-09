@@ -8,6 +8,7 @@ const NOT_WELCOME_GROUPS_FILE = "not-welcome-groups";
 const INACTIVE_AUTO_RESPONDER_GROUPS_FILE = "inactive-auto-responder-groups";
 const ANTI_LINK_GROUPS_FILE = "anti-link-groups";
 const CLOSED_GROUPS_FILE = "closed-groups";
+const PINNED_MESSAGES_FILE = "pinned-messages";
 
 function createIfNotExists(fullPath) {
   if (!fs.existsSync(fullPath)) {
@@ -227,4 +228,59 @@ exports.isGroupClosed = (groupId) => {
   const filename = CLOSED_GROUPS_FILE;
   const closedGroups = readJSON(filename);
   return closedGroups.includes(groupId); // Retorna true si el grupo está cerrado
+};
+
+
+
+// Función para agregar un mensaje fijado a la base de datos
+exports.addPinnedMessage = (groupId, messageId) => {
+  const pinnedMessages = readJSON(PINNED_MESSAGES_FILE);
+
+  let groupPinned = pinnedMessages.find((item) => item.groupId === groupId);
+
+  if (!groupPinned) {
+    groupPinned = { groupId, messages: [] };
+    pinnedMessages.push(groupPinned);
+  }
+
+  if (!groupPinned.messages.includes(messageId)) {
+    groupPinned.messages.push(messageId);
+  }
+
+  writeJSON(PINNED_MESSAGES_FILE, pinnedMessages);
+};
+
+// Función para eliminar un mensaje fijado de la base de datos
+exports.removePinnedMessage = (groupId, messageId) => {
+  const pinnedMessages = readJSON(PINNED_MESSAGES_FILE);
+
+  const groupPinned = pinnedMessages.find((item) => item.groupId === groupId);
+
+  if (groupPinned) {
+    const index = groupPinned.messages.indexOf(messageId);
+
+    if (index !== -1) {
+      groupPinned.messages.splice(index, 1);
+      if (groupPinned.messages.length === 0) {
+        // Si no quedan mensajes fijados, eliminamos el grupo de la lista
+        const groupIndex = pinnedMessages.indexOf(groupPinned);
+        pinnedMessages.splice(groupIndex, 1);
+      }
+      writeJSON(PINNED_MESSAGES_FILE, pinnedMessages);
+    }
+  }
+};
+
+// Función para obtener mensajes fijados de un grupo
+exports.getPinnedMessages = (groupId) => {
+  const pinnedMessages = readJSON(PINNED_MESSAGES_FILE);
+  const groupPinned = pinnedMessages.find((item) => item.groupId === groupId);
+  return groupPinned ? groupPinned.messages : [];
+};
+
+// Función para verificar si un mensaje está fijado en un grupo
+exports.isMessagePinned = (groupId, messageId) => {
+  const pinnedMessages = readJSON(PINNED_MESSAGES_FILE);
+  const groupPinned = pinnedMessages.find((item) => item.groupId === groupId);
+  return groupPinned ? groupPinned.messages.includes(messageId) : false;
 };
