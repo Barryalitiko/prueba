@@ -234,3 +234,22 @@ exports.isGroupClosed = (groupId) => {
   const closedGroups = readJSON(filename);
   return closedGroups.includes(groupId); // Retorna true si el grupo está cerrado
 };
+
+
+// ATENCION
+exports.addMute = (userId, duration) => {
+  const filename = "muted-users.json";
+  const mutedUsers = readJSON(filename);
+  const userIndex = mutedUsers.findIndex((user) => user.id === userId);
+
+  const now = new Date();
+  const expiresAt = new Date(now.getTime() + duration);
+
+  if (userIndex !== -1) {
+    mutedUsers[userIndex].expiresAt = expiresAt;
+  } else {
+    mutedUsers.push({ id: userId, expiresAt });
+  }
+
+  writeJSON(filename, mutedUsers);
+};
