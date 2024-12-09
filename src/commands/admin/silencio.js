@@ -3,7 +3,7 @@ const { DangerError } = require("../../errors/DangerError");
 const { InvalidParameterError } = require("../../errors/InvalidParameterError");
 const { toUserJid, onlyNumbers } = require("../../utils");
 const { muteMember, unmuteMember } = require("../../utils/database");
-const { MAX_MUTE_TIME } = require("../../utils/constants");
+const { MAX_MUTE_TIME } = require("../../utils/database");
 
 module.exports = {
   name: "silencio",
