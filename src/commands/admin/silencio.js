@@ -42,20 +42,23 @@ module.exports = {
       }
 
       const muteDuration = muteDurations[muteIndex];
-      const muteEndTime = Date.now() + muteDuration;
+      const currentTime = new Date();
+      const currentHour = currentTime.getHours();
+      const currentMinute = currentTime.getMinutes();
+      const muteEndTimeHour = currentHour + Math.floor(muteDuration / 3600000);
+      const muteEndTimeMinute = currentMinute + Math.floor((muteDuration % 3600000) / 60000);
 
-      addMute(groupId, userToMute, muteEndTime);
-      message.reply(`🔇 El usuario @${userToMute} ha sido silenciado por ${muteDuration / 60000} minutos.`);
+      if (muteEndTimeMinute >= 60) {
+        muteEndTimeHour += Math.floor(muteEndTimeMinute / 60);
+        muteEndTimeMinute %= 60;
+      }
 
-      // Recuento del tiempo
-      const interval = setInterval(async () => {
-        const currentTime = Date.now();
-        if (currentTime >= muteEndTime) {
-          clearInterval(interval);
-          removeMute(groupId, userToMute);
-          message.reply(`🔊 El usuario @${userToMute} ha sido desmuteado.`);
-        }
-      }, 1000); // Verifica cada segundo
+      if (muteEndTimeHour >= 24) {
+        muteEndTimeHour %= 24;
+      }
+
+      addMute(groupId, userToMute, `${muteEndTimeHour}:${muteEndTimeMinute}`);
+      message.reply(`🔇 El usuario @${userToMute} ha sido silenciado hasta las ${muteEndTimeHour}:${muteEndTimeMinute}.`);
     } catch (error) {
       console.error(error);
       message.reply("Error al ejecutar el comando. Por favor, inténtalo de nuevo.");
