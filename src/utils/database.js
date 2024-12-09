@@ -8,7 +8,6 @@ const NOT_WELCOME_GROUPS_FILE = "not-welcome-groups";
 const INACTIVE_AUTO_RESPONDER_GROUPS_FILE = "inactive-auto-responder-groups";
 const ANTI_LINK_GROUPS_FILE = "anti-link-groups";
 const CLOSED_GROUPS_FILE = "closed-groups";
-const MUTE_MEMBERS_FILE = "muted-members";
 
 function createIfNotExists(fullPath) {
   if (!fs.existsSync(fullPath)) {
@@ -234,82 +233,4 @@ exports.isGroupClosed = (groupId) => {
   const filename = CLOSED_GROUPS_FILE;
   const closedGroups = readJSON(filename);
   return closedGroups.includes(groupId); // Retorna true si el grupo está cerrado
-};
-
-
-
-// borrar despues 
-
-
-
-
-
-
-
-// Función para mutear a un miembro con tiempo
-exports.muteMember = (groupId, userId, muteDuration) => {
-    const filename = MUTE_MEMBERS_FILE;
-    const mutedMembers = readJSON(filename);
-    
-    // Verificar si ya existe un grupo
-    if (!mutedMembers[groupId]) {
-        mutedMembers[groupId] = {};
-    }
-
-    const expireTime = Date.now() + muteDuration * 60000; // Expiración del muteo en milisegundos
-
-    mutedMembers[groupId][userId] = {
-        expireTime,
-        muteDuration
-    };
-
-    writeJSON(filename, mutedMembers);
-};
-
-// Función para desmutear a un miembro
-exports.unmuteMember = (groupId, userId) => {
-    const filename = MUTE_MEMBERS_FILE;
-    const mutedMembers = readJSON(filename);
-
-    if (mutedMembers[groupId] && mutedMembers[groupId][userId]) {
-        delete mutedMembers[groupId][userId];
-        writeJSON(filename, mutedMembers);
-    }
-};
-
-// Verificar si un miembro está muteado y si su muteo ha expirado
-exports.isMutedMember = (groupId, userId) => {
-    const filename = MUTE_MEMBERS_FILE;
-    const mutedMembers = readJSON(filename);
-
-    if (mutedMembers[groupId] && mutedMembers[groupId][userId]) {
-        const member = mutedMembers[groupId][userId];
-        if (Date.now() < member.expireTime) {
-            return true; // El miembro sigue muteado
-        } else {
-            // Desmutear automáticamente si ha expirado el tiempo
-            this.unmuteMember(groupId, userId);
-            return false; // El muteo ha expirado
-        }
-    }
-
-    return false; // El miembro no está muteado
-};
-
-// Función para obtener la duración del muteo en minutos
-exports.getMuteDuration = (minutes) => {
-    switch (minutes) {
-        case 1:
-            return 1;
-        case 2:
-            return 2;
-        case 5:
-            return 5;
-        case 10:
-            return 10;
-        case 15:
-            return 15;
-        default:
-            return 1; // Muteo por 1 minuto si no se proporciona un valor válido
-    }
 };
