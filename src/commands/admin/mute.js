@@ -1,38 +1,54 @@
-const { PREFIX } = require("../../config");
+const { PREFIX, BOT_NUMBER } = require("../../config");
+const { DangerError } = require("../../errors/DangerError");
 const { InvalidParameterError } = require("../../errors/InvalidParameterError");
-const { muteMember, unmuteMember } = require("../../utils/database");
+const { toUserJid, onlyNumbers } = require("../../utils");
+const { muteUser } = require("../middlewares/mute");
 
 module.exports = {
   name: "mute",
-  description: "🔇 Mutea o desmutea a un miembro del grupo.",
-  commands: ["mute"],
-  usage: `${PREFIX}mute <@usuario> <tiempo>`,
-  handle: async ({ args, sendReply, sendSuccessReact, remoteJid }) => {
-    if (!args.length) {
+  description: "Mutea a un usuario",
+  commands: ["mute", "silenciar"],
+  usage: `${PREFIX}mute @marcar_miembro ou ${PREFIX}mute respondiendo a un mensaje`,
+  handle: async ({
+    args,
+    isReply,
+    socket,
+    remoteJid,
+    replyJid,
+    sendReply,
+    userJid,
+    sendSuccessReact,
+  }) => {
+    if (!args.length && !isReply) {
       throw new InvalidParameterError(
-        "👻 Debes proporcionar el usuario y el tiempo de muteo."
+        "👻 𝙺𝚛𝚊𝚐𝚙𝚞𝚜.𝚋𝚘𝚝 👻 Menciona a la persona"
       );
     }
 
-    const userJid = args[0];
-    const muteTime = parseInt(args[1]);
+    const memberToMuteJid = isReply ? replyJid : toUserJid(args[0]);
+    const memberToMuteNumber = onlyNumbers(memberToMuteJid);
 
-    if (!muteTime || muteTime <= 0) {
+    if (memberToMuteNumber.length < 7 || memberToMuteNumber.length > 15) {
       throw new InvalidParameterError(
-        "🕰️ El tiempo de muteo debe ser un número positivo."
+        "👻 𝙺𝚛𝚊𝚐𝚙𝚞𝚜.𝚋𝚘𝚝 👻 𝙽𝚞́𝚖𝚎𝚛𝚘 𝚗𝚘 in𝚟𝚊𝚕𝚒𝚍𝚘"
       );
     }
 
-    if (muteMember(remoteJid, userJid, muteTime * 60000)) {
-      await sendSuccessReact();
-      await sendReply(`🔇 El usuario @${userJid} ha sido muteado por ${muteTime} minutos.`);
-    } else {
-      throw new InvalidParameterError(
-        "🚫 No se pudo mutear al usuario."
+    if (memberToMuteJid === userJid) {
+      throw new DangerError(
+        "👻 𝙺𝚛𝚊𝚐𝚙𝚞𝚜.𝚋𝚘𝚝 👻 𝙽𝚘 𝚜𝚎 𝚙𝚞𝚎𝚍𝚎 𝚛𝚎𝚊𝚕𝚒𝚣𝚊𝚛 𝚕𝚊 𝚊𝚌𝚌𝚒𝚘́𝚗"
       );
     }
+
+    const botJid = toUserJid(BOT_NUMBER);
+    if (memberToMuteJid === botJid) {
+      throw new DangerError(
+        "👻 𝙺𝚛𝚊𝚐𝚙𝚞𝚜.𝚋𝚘𝚝 👻 𝙽𝚘 𝚜𝚎 𝚙𝚞𝚎𝚍𝚎 𝚛𝚎𝚊𝚕𝚒𝚣𝚊𝚛 𝚕𝚊 𝚊𝚌𝚌𝚒𝚘́𝚗"
+      );
+    }
+
+    await muteUser(memberToMuteJid);
+    await sendSuccessReact();
+    await sendReply("👻 𝙺𝚛𝚊𝚐𝚙𝚞𝚜.𝚋𝚘𝚝 👻 He silenciado al usuario");
   },
 };
-
-
-
