@@ -8,6 +8,9 @@ const NOT_WELCOME_GROUPS_FILE = "not-welcome-groups";
 const INACTIVE_AUTO_RESPONDER_GROUPS_FILE = "inactive-auto-responder-groups";
 const ANTI_LINK_GROUPS_FILE = "anti-link-groups";
 const CLOSED_GROUPS_FILE = "closed-groups";
+const MUTE_DATA_FILE = "mute-data"; // Nuevo archivo para almacenar datos de muteo
+
+const MAX_MUTE_TIME = 15 * 60 * 1000; // 15 minutos en milisegundos
 
 function createIfNotExists(fullPath) {
   if (!fs.existsSync(fullPath)) {
@@ -30,11 +33,19 @@ function writeJSON(jsonFile, data) {
 
   fs.writeFileSync(fullPath, JSON.stringify(data));
 }
-// borrar despues
-function createIfNotExists(fullPath) {
-    if (!fs.existsSync(fullPath)) {
-        fs.writeFileSync(fullPath, JSON.stringify({}));
-    }
+
+// Función para leer el archivo de muteos
+function readMuteJSON() {
+  const fullPath = path.resolve(databasePath, `${MUTE_DATA_FILE}.json`);
+  createIfNotExists(fullPath);
+  return JSON.parse(fs.readFileSync(fullPath, "utf8"));
+}
+
+// Función para escribir en el archivo de muteos
+function writeMuteJSON(data) {
+  const fullPath = path.resolve(databasePath, `${MUTE_DATA_FILE}.json`);
+  createIfNotExists(fullPath);
+  fs.writeFileSync(fullPath, JSON.stringify(data));
 }
 
 exports.activateGroup = (groupId) => {
@@ -235,5 +246,63 @@ exports.isGroupClosed = (groupId) => {
   return closedGroups.includes(groupId); // Retorna true si el grupo está cerrado
 };
 
+// Funciones para gestionar muteos
+exports.addMute = (groupId, userId, muteDuration) => {
+  // Asegurarse de que la duración no exceda el máximo permitido
+  if (muteDuration > MAX_MUTE_TIME) {
+    muteDuration = MAX_MUTE_TIME; // Establecer al máximo permitido si se excede
+  }
 
-// ATENCION
+  const muteData = readMuteJSON();
+
+  // Verificar si ya hay un muteo para ese usuario en el grupo
+  const existingMute = muteData.find(
+    (entry) => entry.groupId === groupId && entry.userId === userId
+  );
+
+  if (existingMute) {
+    // Si ya está silenciado, actualizamos la duración
+    existingMute.muteDuration = muteDuration;
+    existingMute.muteStartTime = Date.now(); // Actualizamos el tiempo de inicio del muteo
+  } else {
+    // Si no está silenciado, agregamos un nuevo muteo
+    muteData.push({
+      groupId,
+      userId,
+      muteDuration,
+      muteStartTime: Date.now(), // Guardamos el tiempo de inicio del muteo
+    });
+  }
+
+  writeMuteJSON(muteData);
+};
+
+// Función para comprobar si un usuario está silenciado
+exports.isUserMuted = (groupId, userId) => {
+  const muteData = readMuteJSON();
+  const userMute = muteData.find(
+    (entry) => entry.groupId === groupId && entry.userId === userId
+  );
+
+  if (userMute) {
+    const muteEndTime = userMute.muteStartTime + userMute.muteDuration;
+    if (Date.now() > muteEndTime) {
+      // Si el tiempo de muteo ha expirado, eliminamos el muteo
+      this.removeMute(groupId, userId);
+      return false;
+    }
+    return true;
+  }
+
+  return false;
+};
+
+// Función para eliminar el muteo de un usuario
+exports.removeMute = (groupId, userId) => {
+  const muteData = readMuteJSON();
+  const updatedMuteData = muteData.filter(
+    (entry) => entry.groupId !== groupId || entry.userId !== userId
+  );
+
+  writeMuteJSON(updatedMuteData);
+};
