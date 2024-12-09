@@ -205,25 +205,6 @@ exports.loadCommonFunctions = ({ socket, webMessage }) => {
     }
   };
 
-  // Nueva función para mutear al usuario y eliminar sus mensajes
-  const muteUser = async (userJid, muteTime) => {
-    try {
-      // Mute the member
-      await socket.groupParticipantsUpdate(remoteJid, [userJid], 'mute');
-      
-      // Eliminar los mensajes del usuario muteado
-      await deleteMessagesFromUser(userJid);
-
-      // Desmutear al usuario después del tiempo especificado
-      setTimeout(async () => {
-        await socket.groupParticipantsUpdate(remoteJid, [userJid], 'unmute');
-      }, muteTime);
-    } catch (error) {
-      await sendErrorReply("Hubo un error al mutear al usuario.");
-      console.error("Error al mutear al miembro:", error);
-    }
-  };
-
   return {
     args,
     commandName,
@@ -254,12 +235,10 @@ exports.loadCommonFunctions = ({ socket, webMessage }) => {
     sendVideoFromURL,
     sendWaitReact,
     sendWaitReply,
-    pinMessage, // ATENCIÓN
     sendWarningReact,
     sendWarningReply,
     closeGroupCommand, // Nueva función para cerrar grupos
     openGroupCommand,  // Nueva función para abrir grupos
     getProfilePicture, // Exportando la función getProfilePicture
-    muteMember, // Nueva función para mutear a los miembros y borrar sus mensajes
   };
 };
