@@ -243,6 +243,5 @@ exports.loadCommonFunctions = ({ socket, webMessage }) => {
     openGroupCommand,  // Nueva función para abrir grupos
     getProfilePicture, // Exportando la función getProfilePicture
     deleteMessage, // Función para eliminar mensajes
-    isUserMuted, // Función para verificar si un usuario está silenciado
   };
 };
