@@ -10,29 +10,25 @@ module.exports = {
   handle: async ({ args, sendReply, sendSuccessReact, remoteJid, mentionedJid }) => {
     if (args.length < 2 || !mentionedJid || isNaN(args[1])) {
       throw new InvalidParameterError(
-        "👻 Krampus.bot 👻 Uso incorrecto! Usa el comando así: \n`!mute @usuario <duración en segundos>`"
+        "Uso incorrecto! Usa el comando así: \n`!mute @usuario <duración en segundos>`"
       );
     }
 
-    const muteDuration = parseInt(args[1]); // Duración en segundos
-
-    if (muteDuration <= 0) {
+    const muteDuration = parseInt(args[1]);
+    if (isNaN(muteDuration) || muteDuration <= 0) {
       throw new InvalidParameterError(
-        "👻 Krampus.bot 👻 La duración debe ser mayor a 0 segundos."
+        "La duración debe ser un número entero mayor a 0 segundos."
       );
     }
 
-    const userId = mentionedJid[0]; // Suponiendo que el `mentionedJid` es un array con los usuarios mencionados
-
+    const userId = mentionedJid[0];
     if (await isUserMuted(remoteJid, userId)) {
-      await sendReply("👻 Krampus.bot 👻 Este usuario ya está silenciado en este grupo.");
+      await sendReply("Este usuario ya está silenciado en este grupo.");
       return;
     }
 
     await addMute(remoteJid, userId, muteDuration);
-
     await sendSuccessReact();
-
-    await sendReply(`👻 Krampus.bot 👻 El usuario @${userId} ha sido silenciado por ${muteDuration} segundos.`);
+    await sendReply(`El usuario @${userId} ha sido silenciado por ${muteDuration} segundos.`);
   },
 };
