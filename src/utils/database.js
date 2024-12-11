@@ -8,19 +8,7 @@ const NOT_WELCOME_GROUPS_FILE = "not-welcome-groups";
 const INACTIVE_AUTO_RESPONDER_GROUPS_FILE = "inactive-auto-responder-groups";
 const ANTI_LINK_GROUPS_FILE = "anti-link-groups";
 const CLOSED_GROUPS_FILE = "closed-groups";
-const MUTE_DATA_FILE = "mute-data"; // Nuevo archivo para almacenar datos de muteo
 
-const MAX_MUTE_TIME = 15 * 60 * 1000; // 15 minutos en milisegundos
-
-// Tiempos predeterminados de muteo
-const SILENCE_TIMES = {
-  "0": 0,             // 0: Desmutear
-  "1": 1 * 60 * 1000, // 1: 1 minuto
-  "2": 3 * 60 * 1000, // 2: 3 minutos
-  "3": 5 * 60 * 1000, // 3: 5 minutos
-  "4": 10 * 60 * 1000,// 4: 10 minutos
-  "5": 15 * 60 * 1000,// 5: 15 minutos
-};
 
 function createIfNotExists(fullPath) {
   if (!fs.existsSync(fullPath)) {
@@ -318,44 +306,4 @@ exports.isGroupClosed = (groupId) => {
     return closedGroups.includes(groupId);
 };
 
-exports.addGroupToMuteList = (groupId, userId) => {
-  const muteList = readMuteJSON();
-
-  if (!muteList[groupId]) {
-    muteList[groupId] = [];
-  }
-
-  if (!muteList[groupId].includes(userId)) {
-    muteList[groupId].push(userId);
-  }
-
-  writeMuteJSON(muteList);
-};
-
-exports.removeGroupFromMuteList = (groupId, userId) => {
-  const muteList = readMuteJSON();
-
-  if (muteList[groupId]) {
-    const index = muteList[groupId].indexOf(userId);
-
-    if (index !== -1) {
-      muteList[groupId].splice(index, 1);
-    }
-  }
-
-  writeMuteJSON(muteList);
-};
-
-exports.isUserMutedInGroup = (groupId, userId) => {
-  const muteList = readMuteJSON();
-  return muteList[groupId] && muteList[groupId].includes(userId);
-};
-
-exports.getMutedUsers = (groupId) => {
-  const muteList = readMuteJSON();
-  return muteList[groupId] || [];
-};
-
-exports.getMutedUsersForAllGroups = () => {
-  return readMuteJSON();
-};
+m
