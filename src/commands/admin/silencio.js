@@ -25,18 +25,5 @@ module.exports = {
     await sendReply(`El usuario @${userId} ha sido silenciado.`);
   },
 };
-```
-En este ejemplo, el comando `!mute` solo requiere el nombre del usuario que se quiere silenciar. No se especifica un tiempo de silencio.
 
-Recuerda que debes modificar la función `addMute` en el archivo `database.js` para que no requiera un tiempo de silencio. Por ejemplo:
-```
-exports.addMute = (groupId, userId) => {
-  const filename = MUTE_DATA_FILE;
-  const muteData = readJSON(filename);
-  const userMute = {
-    groupId,
-    userId,
-  };
-  muteData.push(userMute);
-  writeJSON(filename, muteData);
-};
+
