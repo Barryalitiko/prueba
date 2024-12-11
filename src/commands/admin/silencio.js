@@ -4,20 +4,13 @@ const { addMute, removeMute, isUserMuted } = require("../../utils/database");
 
 module.exports = {
   name: "mute",
-  description: "Silencia a un usuario en el grupo por una duración especificada.",
+  description: "Silencia a un usuario en el grupo.",
   commands: ["mute"],
-  usage: `${PREFIX}mute @usuario <duración en segundos>`,
+  usage: `${PREFIX}mute @usuario`,
   handle: async ({ args, sendReply, sendSuccessReact, remoteJid, mentionedJid }) => {
-    if (args.length < 2 || !mentionedJid || isNaN(args[1])) {
+    if (args.length < 1 || !mentionedJid) {
       throw new InvalidParameterError(
-        "Uso incorrecto! Usa el comando así: \n`!mute @usuario <duración en segundos>`"
-      );
-    }
-
-    const muteDuration = parseInt(args[1]);
-    if (isNaN(muteDuration) || muteDuration <= 0) {
-      throw new InvalidParameterError(
-        "La duración debe ser un número entero mayor a 0 segundos."
+        "Uso incorrecto! Usa el comando así: \n`!mute @usuario`"
       );
     }
 
@@ -27,8 +20,23 @@ module.exports = {
       return;
     }
 
-    await addMute(remoteJid, userId, muteDuration);
+    await addMute(remoteJid, userId);
     await sendSuccessReact();
-    await sendReply(`El usuario @${userId} ha sido silenciado por ${muteDuration} segundos.`);
+    await sendReply(`El usuario @${userId} ha sido silenciado.`);
   },
+};
+```
+En este ejemplo, el comando `!mute` solo requiere el nombre del usuario que se quiere silenciar. No se especifica un tiempo de silencio.
+
+Recuerda que debes modificar la función `addMute` en el archivo `database.js` para que no requiera un tiempo de silencio. Por ejemplo:
+```
+exports.addMute = (groupId, userId) => {
+  const filename = MUTE_DATA_FILE;
+  const muteData = readJSON(filename);
+  const userMute = {
+    groupId,
+    userId,
+  };
+  muteData.push(userMute);
+  writeJSON(filename, muteData);
 };
