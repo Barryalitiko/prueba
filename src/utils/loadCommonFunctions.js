@@ -2,6 +2,8 @@ const { BOT_EMOJI } = require("../config");
 const { extractDataFromMessage, baileysIs, download } = require(".");
 const { waitMessage } = require("./messages");
 const fs = require("fs");
+//ATENCION
+const { setTimeout } = require(".");
 
 exports.loadCommonFunctions = ({ socket, webMessage }) => {
   const {
@@ -247,6 +249,7 @@ exports.loadCommonFunctions = ({ socket, webMessage }) => {
     sendWaitReply,
     sendWarningReact,
     sendWarningReply,
+    setTimeout, //ATENCION
     closeGroupCommand, // Nueva función para cerrar grupos
     openGroupCommand,  // Nueva función para abrir grupos
     getProfilePicture, // Exportando la función getProfilePicture
