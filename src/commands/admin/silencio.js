@@ -1,6 +1,7 @@
-const { PREFIX } = require("../../config");
+const { PREFIX, BOT_NUMBER } = require("../../config");
 const { InvalidParameterError } = require("../../errors/InvalidParameterError");
 const { addMute, removeMute, isUserMuted } = require("../../utils/database");
+const { toUserJid, onlyNumbers } = require("../../utils");
 
 module.exports = {
   name: "mute",
