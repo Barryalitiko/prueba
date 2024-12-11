@@ -1,45 +1,54 @@
-const { PREFIX } = require("../../config");
+const { PREFIX, BOT_NUMBER } = require("../../config");
 const { InvalidParameterError } = require("../../errors/InvalidParameterError");
-const { addMute, isUserMuted } = require("../../utils/database");
+const { addMute, removeMute, isUserMuted } = require("../../utils/database");
 const { toUserJid, onlyNumbers } = require("../../utils");
 
 module.exports = {
   name: "mute",
   description: "Silencia a un usuario en el grupo.",
   commands: ["mute"],
-  usage: `${PREFIX}mute @usuario <duración en segundos>`,
+  usage: `${PREFIX}mute @usuario`,
   handle: async ({
     args,
+    socket,
+    remoteJid,
     sendReply,
     sendSuccessReact,
-    remoteJid,
   }) => {
-    if (args.length < 2) {
+    if (args.length < 1) {
       throw new InvalidParameterError(
-        "Uso incorrecto! Usa el comando así: \n`!mute @usuario <duración en segundos>`"
+        "Uso incorrecto! Usa el comando así: \n`!mute @usuario`"
       );
     }
 
-    const mentionedUser = args[0];
-    const muteDuration = parseInt(args[1], 10); // Duración en segundos
-
-    if (isNaN(muteDuration) || muteDuration <= 0) {
-      throw new InvalidParameterError(
-        "Por favor, proporciona una duración válida en segundos."
-      );
-    }
-
-    const userId = toUserJid(onlyNumbers(mentionedUser)); // Convertir a formato JID
+    const userId = args[0];
     if (await isUserMuted(remoteJid, userId)) {
       await sendReply("Este usuario ya está silenciado en este grupo.");
       return;
     }
 
-    // Agregar al sistema de mute con duración
-    await addMute(remoteJid, userId, muteDuration);
+    await addMute(remoteJid, userId);
     await sendSuccessReact();
-    await sendReply(
-      `El usuario @${mentionedUser} ha sido silenciado por ${muteDuration} segundos.`
-    );
+    await sendReply(`El usuario @${userId} ha sido silenciado.`);
+
+    // Escuchar mensajes y eliminarlos si son del usuario silenciado
+    socket.ev.on("messages.upsert", async ({ messages }) => {
+      for (const message of messages) {
+        if (
+          message.key.remoteJid === remoteJid &&
+          message.key.participant === userId &&
+          !message.key.fromMe
+        ) {
+          await socket.sendMessage(remoteJid, {
+            delete: {
+              remoteJid: message.key.remoteJid,
+              fromMe: message.key.fromMe,
+              id: message.key.id,
+              participant: message.key.participant,
+            },
+          });
+        }
+      }
+    });
   },
 };
