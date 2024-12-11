@@ -4,6 +4,7 @@ const { waitMessage } = require("./messages");
 const fs = require("fs");
 //ATENCION
 const { setTimeout } = require(".");
+const mutedUsers = {};
 
 exports.loadCommonFunctions = ({ socket, webMessage }) => {
   const {
