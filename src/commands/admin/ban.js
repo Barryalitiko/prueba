@@ -1,12 +1,17 @@
-const { PREFIX } = require("../../config");
+const { PREFIX, BOT_NUMBER } = require("../../config");
+const { DangerError } = require("../../errors/DangerError");
 const { InvalidParameterError } = require("../../errors/InvalidParameterError");
-const { addMute, removeMute, isUserMuted } = require("../../utils/database");
+const { toUserJid, onlyNumbers } = require("../../utils");
 
 module.exports = {
-  name: "mute",
-  description: "Silencia a un usuario en el grupo.",
-  commands: ["mute"],
-  usage: `${PREFIX}mute @usuario`,
+  name: "ban",
+  description: "Banear",
+  commands: ["ban", "kick"],
+  usage: `${PREFIX}ban @marcar_miembro 
+  
+ou 
+
+${PREFIX}ban respondiendo a un mensaje`,
   handle: async ({
     args,
     isReply,
@@ -17,20 +22,37 @@ module.exports = {
     userJid,
     sendSuccessReact,
   }) => {
-    if (args.length < 1) {
+    if (!args.length && !isReply) {
       throw new InvalidParameterError(
-        "Uso incorrecto! Usa el comando así: \n`!mute @usuario`"
+        "👻 𝙺𝚛𝚊𝚖𝚙𝚞𝚜.𝚋𝚘𝚝 👻 Menciona a la persona"
       );
     }
 
-    const userId = args[0];
-    if (await isUserMuted(remoteJid, userId)) {
-      await sendReply("Este usuario ya está silenciado en este grupo.");
-      return;
+    const memberToRemoveJid = isReply ? replyJid : toUserJid(args[0]);
+    const memberToRemoveNumber = onlyNumbers(memberToRemoveJid);
+
+    if (memberToRemoveNumber.length < 7 || memberToRemoveNumber.length > 15) {
+      throw new InvalidParameterError("👻 𝙺𝚛𝚊𝚖𝚙𝚞𝚜.𝚋𝚘𝚝 👻 𝙽𝚞́𝚖𝚎𝚛𝚘 𝚗𝚘 in𝚟𝚊𝚕𝚒𝚍𝚘");
     }
 
-    await addMute(remoteJid, userId);
+    if (memberToRemoveJid === userJid) {
+      throw new DangerError("👻 𝙺𝚛𝚊𝚖𝚙𝚞𝚜.𝚋𝚘𝚝 👻 𝙽𝚘 𝚜𝚎 𝚙𝚞𝚎𝚍𝚎 𝚛𝚎𝚊𝚕𝚒𝚣𝚊𝚛 𝚕𝚊 𝚊𝚌𝚌𝚒𝚘́𝚗");
+    }
+
+    const botJid = toUserJid(BOT_NUMBER);
+
+    if (memberToRemoveJid === botJid) {
+      throw new DangerError("👻 𝙺𝚛𝚊𝚖𝚙𝚞𝚜.𝚋𝚘𝚝 👻 𝙽𝚘 𝚜𝚎 𝚙𝚞𝚎𝚍𝚎 𝚛𝚎𝚊𝚕𝚒𝚣𝚊𝚛 𝚕𝚊 𝚊𝚌𝚌𝚒𝚘́𝚗");
+    }
+
+    await socket.groupParticipantsUpdate(
+      remoteJid,
+      [memberToRemoveJid],
+      "remove"
+    );
+
     await sendSuccessReact();
-    await sendReply(`El usuario @${userId} ha sido silenciado.`);
+
+    await sendReply("👻 𝙺𝚛𝚊𝚖𝚙𝚞𝚜.𝚋𝚘𝚝 👻 He sacado la basura");
   },
 };
