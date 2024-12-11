@@ -213,5 +213,4 @@ exports.removeMute = (groupId, userId) => {
   if (index !== -1) {
     muteData.splice(index, 1);
     writeJSON(filename, muteData);
-  }
 };
