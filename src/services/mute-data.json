@@ -1,0 +1,14 @@
+{
+  "mutedUsers": [
+    {
+      "jid": "1234567890@s.whatsapp.net",
+      "muteStartTime": 1692345600000,
+      "muteDuration": 3600000
+    },
+    {
+      "jid": "0987654321@s.whatsapp.net",
+      "muteStartTime": 1692349200000,
+      "muteDuration": 7200000
+    }
+  ]
+}
