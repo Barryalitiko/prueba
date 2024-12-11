@@ -8,6 +8,8 @@ const NOT_WELCOME_GROUPS_FILE = "not-welcome-groups";
 const INACTIVE_AUTO_RESPONDER_GROUPS_FILE = "inactive-auto-responder-groups";
 const ANTI_LINK_GROUPS_FILE = "anti-link-groups";
 const CLOSED_GROUPS_FILE = "closed-groups";
+//ATENCION
+const MUTE_DATA_FILE = "mute-data";
 
 
 function createIfNotExists(fullPath) {
