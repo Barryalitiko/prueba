@@ -180,13 +180,14 @@ exports.addMute = (groupId, userId, muteDuration) => {
   const muteData = readJSON(filename);
   const muteStartTime = Date.now();
   const muteEndTime = muteStartTime + muteDuration * 1000;
-  const userMute = exports.addMute = (groupId, userId) => {
-  const filename = MUTE_DATA_FILE;
-  const muteData = readJSON(filename);
+
   const userMute = {
     groupId,
     userId,
+    muteStartTime,
+    muteEndTime,
   };
+
   muteData.push(userMute);
   writeJSON(filename, muteData);
 };
@@ -194,23 +195,32 @@ exports.addMute = (groupId, userId, muteDuration) => {
 exports.isUserMuted = (groupId, userId) => {
   const filename = MUTE_DATA_FILE;
   const muteData = readJSON(filename);
-  const userMute = muteData.find((entry) => entry.groupId === groupId && entry.userId === userId);
+  const userMute = muteData.find(
+    (entry) => entry.groupId === groupId && entry.userId === userId
+  );
+
   if (!userMute) {
     return false;
   }
+
   const currentTime = Date.now();
   if (currentTime >= userMute.muteEndTime) {
-    this.removeMute(groupId, userId);
+    exports.removeMute(groupId, userId);
     return false;
   }
+
   return true;
 };
 
 exports.removeMute = (groupId, userId) => {
   const filename = MUTE_DATA_FILE;
   const muteData = readJSON(filename);
-  const index = muteData.findIndex((entry) => entry.groupId === groupId && entry.userId === userId);
+  const index = muteData.findIndex(
+    (entry) => entry.groupId === groupId && entry.userId === userId
+  );
+
   if (index !== -1) {
     muteData.splice(index, 1);
     writeJSON(filename, muteData);
+  }
 };
