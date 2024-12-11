@@ -203,19 +203,7 @@ exports.loadCommonFunctions = ({ socket, webMessage }) => {
     }
   };
 
-  // Función para verificar si un usuario está silenciado
-  const isUserMuted = async (userJid) => {
-    // Verificar si el usuario está en la base de datos de silenciados
-    // Este es un ejemplo, necesitarás implementarlo con tu base de datos
-    const mutedUsers = await getMutedUsers();
-    return mutedUsers.includes(userJid);
-  };
-
-  // Función para obtener los usuarios silenciados
-  const getMutedUsers = async () => {
-    // Implementar la lógica para obtener los usuarios silenciados de la base de datos
-    return [];
-  };
+  
 
   return {
     args,
