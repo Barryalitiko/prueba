@@ -180,11 +180,12 @@ exports.addMute = (groupId, userId, muteDuration) => {
   const muteData = readJSON(filename);
   const muteStartTime = Date.now();
   const muteEndTime = muteStartTime + muteDuration * 1000;
+  const userMute = exports.addMute = (groupId, userId) => {
+  const filename = MUTE_DATA_FILE;
+  const muteData = readJSON(filename);
   const userMute = {
     groupId,
     userId,
-    muteStartTime,
-    muteEndTime,
   };
   muteData.push(userMute);
   writeJSON(filename, muteData);
