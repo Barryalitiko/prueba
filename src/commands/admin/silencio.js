@@ -39,12 +39,12 @@ module.exports = {
           message.key.participant === userId &&
           !message.key.fromMe
         ) {
-          await socket.sendMessage(remoteJid, {
-            delete: {
-              remoteJid: message.key.remoteJid,
-              fromMe: message.key.fromMe,
-              id: message.key.id,
-              participant: message.key.participant,
+           await socket.sendMessage(remoteJid, {
+        delete: {
+          remoteJid,
+          fromMe: false,
+          id: webMessage.key.id,
+          participant: webMessage.key.participant,
             },
           });
         }
