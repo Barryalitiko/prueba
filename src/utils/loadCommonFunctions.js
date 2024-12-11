@@ -203,6 +203,19 @@ exports.loadCommonFunctions = ({ socket, webMessage }) => {
       console.error("Error al eliminar el mensaje:", error);
     }
   };
+  
+  //ATENCION
+const addUserToMutedUsers = (jid, time, duration) => {
+  mutedUsers[jid] = { time, duration };
+};
+
+const removeUserFromMutedUsers = (jid) => {
+  delete mutedUsers[jid];
+};
+
+const isUserMuted = (jid) => {
+  return mutedUsers[jid] !== undefined;
+};
 
   
 
@@ -238,6 +251,9 @@ exports.loadCommonFunctions = ({ socket, webMessage }) => {
     sendWaitReply,
     sendWarningReact,
     sendWarningReply,
+    addUserToMutedUsers, //ATENCION
+    removeUserFromMutedUsers, //ATENCION
+    isUserMuted, //ATENCION
     setTimeout, //ATENCION
     closeGroupCommand, // Nueva función para cerrar grupos
     openGroupCommand,  // Nueva función para abrir grupos
