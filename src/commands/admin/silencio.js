@@ -33,5 +33,12 @@ module.exports = {
     await addMute(remoteJid, userId);
     await sendSuccessReact();
     await sendReply(`El usuario @${userId} ha sido silenciado.`);
+
+    // Eliminar mensajes del usuario silenciado
+    socket.on('message', (message) => {
+      if (message.key.fromMe === false && message.key.remoteJid === remoteJid && message.key.participant === userId) {
+        socket.sendMessage(message.key.remoteJid, { delete: message.key });
+      }
+    });
   },
 };
