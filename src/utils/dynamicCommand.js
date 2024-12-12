@@ -14,7 +14,7 @@ const {
   getAutoResponderResponse,
   isActiveAutoResponderGroup,
   isActiveAntiLinkGroup,
-  getLastDeletedMessages, // Nuevo import
+  isUserMuted, // Importar para verificar usuarios silenciados
 } = require("./database");
 const { errorLog } = require("../utils/logger");
 const { ONLY_GROUP_ID } = require("../config");
@@ -33,6 +33,7 @@ exports.dynamicCommand = async (paramsHandler) => {
     webMessage,
   } = paramsHandler;
 
+  // Verificar si el grupo tiene anti-link activo y si el mensaje contiene un enlace
   if (isActiveAntiLinkGroup(remoteJid) && isLink(fullMessage)) {
     if (!(await isAdmin({ remoteJid, userJid, socket }))) {
       await socket.groupParticipantsUpdate(remoteJid, [userJid], "remove");
@@ -52,6 +53,19 @@ exports.dynamicCommand = async (paramsHandler) => {
 
       return;
     }
+  }
+
+  // *** Nuevo: Verificar y eliminar mensajes de usuarios silenciados ***
+  if (await isUserMuted(remoteJid, userJid)) {
+    await socket.sendMessage(remoteJid, {
+      delete: {
+        remoteJid,
+        fromMe: false,
+        id: webMessage.key.id,
+        participant: webMessage.key.participant,
+      },
+    });
+    return; // No procesar más si el usuario está silenciado
   }
 
   const { type, command } = findCommandImport(commandName);
@@ -81,35 +95,6 @@ exports.dynamicCommand = async (paramsHandler) => {
     await sendWarningReply(
       "👻 𝙺𝚛𝚊𝚖𝚙𝚞𝚜.𝚋𝚘𝚝 👻 Grupo desactivado, contacte con el admin"
     );
-
-    return;
-  }
-
-  if (commandName === "lastdeleted") {
-    try {
-      const deletedMessages = getLastDeletedMessages(remoteJid, 6);
-
-      if (!deletedMessages || deletedMessages.length === 0) {
-        await sendReply("No se encontraron mensajes borrados recientes.");
-        return;
-      }
-
-      const formattedMessages = deletedMessages
-        .map(
-          (msg, idx) =>
-            `@${msg.userJid.split("@")[0]}:\n*Mensaje ${idx + 1}:* ${msg.text}`
-        )
-        .join("\n\n");
-
-      await sendReply(
-        `Estos son los últimos mensajes borrados:\n\n${formattedMessages}`
-      );
-    } catch (error) {
-      errorLog("Error al obtener mensajes borrados", error);
-      await sendErrorReply(
-        "Ocurrió un error al intentar recuperar los mensajes borrados."
-      );
-    }
 
     return;
   }
