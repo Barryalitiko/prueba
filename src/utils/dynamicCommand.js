@@ -62,7 +62,7 @@ exports.dynamicCommand = async (paramsHandler) => {
       delete: {
         remoteJid,
         fromMe: false,
-        id: (link unavailable),
+        id: webMessage.key.id,
         participant: webMessage.key.participant,
       },
     });
