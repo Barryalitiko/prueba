@@ -1,54 +1,30 @@
-const { PREFIX, BOT_NUMBER } = require("../../config");
+const { PREFIX } = require("../../config");
 const { InvalidParameterError } = require("../../errors/InvalidParameterError");
-const { addMute, removeMute, isUserMuted } = require("../../utils/database");
-const { toUserJid, onlyNumbers } = require("../../utils");
+const { addMute, isUserMuted } = require("../../utils/database");
 
 module.exports = {
   name: "mute",
   description: "Silencia a un usuario en el grupo.",
   commands: ["mute"],
   usage: `${PREFIX}mute @usuario`,
-  handle: async ({
-    args,
-    socket,
-    remoteJid,
-    sendReply,
-    sendSuccessReact,
-  }) => {
+  handle: async ({ args, socket, remoteJid, sendReply, sendSuccessReact }) => {
     if (args.length < 1) {
       throw new InvalidParameterError(
-        "Uso incorrecto! Usa el comando así: \n`!mute @usuario`"
+        `Uso incorrecto. Usa el comando así:\n${PREFIX}mute @usuario`
       );
     }
 
-    const userId = args[0];
+    const userId = args[0].replace("@", "").replace(/[^0-9]/g, "") + "@s.whatsapp.net";
+
+    // Verificar si el usuario ya está silenciado
     if (await isUserMuted(remoteJid, userId)) {
       await sendReply("Este usuario ya está silenciado en este grupo.");
       return;
     }
 
+    // Silenciar al usuario
     await addMute(remoteJid, userId);
     await sendSuccessReact();
-    await sendReply(`El usuario @${userId} ha sido silenciado.`);
-
-    // Escuchar mensajes y eliminarlos si son del usuario silenciado
-    socket.ev.on("messages.upsert", async ({ messages }) => {
-      for (const message of messages) {
-        if (
-          message.key.remoteJid === remoteJid &&
-          message.key.participant === userId &&
-          !message.key.fromMe
-        ) {
-           await socket.sendMessage(remoteJid, {
-        delete: {
-          remoteJid,
-          fromMe: false,
-          id: webMessage.key.id,
-          participant: webMessage.key.participant,
-            },
-          });
-        }
-      }
-    });
+    await sendReply(`El usuario @${args[0]} ha sido silenciado.`);
   },
 };
