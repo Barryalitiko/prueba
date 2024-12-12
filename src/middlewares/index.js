@@ -29,3 +29,11 @@ exports.isAdmin = async ({ remoteJid, userJid, socket }) => {
 
   return isOwner || isAdmin;
 };
+
+//ATENCION
+
+const messageHandler = require("./messageHandler");
+
+module.exports = {
+  messageHandler,
+};
