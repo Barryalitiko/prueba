@@ -55,9 +55,8 @@ exports.dynamicCommand = async (paramsHandler) => {
     }
   }
 
-  // *** Nuevo: Verificar y eliminar mensajes de usuarios silenciados ***
-  if (await isUserMuted(remoteJid, userJid)) {
-  await socket.groupParticipantsUpdate(remoteJid, [userJid], "remove");
+  // *** Manejo de usuarios silenciados ***
+if (await isUserMuted(remoteJid, userJid)) {
   await socket.sendMessage(remoteJid, {
     delete: {
       remoteJid,
