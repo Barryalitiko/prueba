@@ -66,8 +66,7 @@ exports.dynamicCommand = async (paramsHandler) => {
       participant: webMessage.key.participant,
     },
   });
-  return; // No procesar más si el usuario está silenciado
-  }
+}
 
   const { type, command } = findCommandImport(commandName);
 
