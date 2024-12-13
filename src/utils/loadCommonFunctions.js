@@ -6,6 +6,10 @@ const fs = require("fs");
 const { setTimeout } = require(".");
 const mutedUsers = {};
 
+exports.getMentionedUsers = (webMessage) => {
+  return webMessage.message.extendedTextMessage?.contextInfo?.mentionedJid || [];
+};
+
 exports.loadCommonFunctions = ({ socket, webMessage }) => {
   const {
     args,
