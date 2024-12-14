@@ -1,59 +1,36 @@
 const { PREFIX } = require("../../config");
 const { InvalidParameterError } = require("../../errors/InvalidParameterError");
-const { DangerError } = require("../../errors/DangerError");
-const { toggleAdmin } = require("../../utils/loadcommonfunctions");
-const { toUserJid } = require("../../utils");
+const { toggleAdmin } = require("../../utils/database");
 
 module.exports = {
   name: "admin",
-  description: "Asignar o quitar permisos de administrador",
-  commands: ["admin", "asignaradmin", "quitaradmin"],
-  usage: `${PREFIX}admin (1/0) @miembro o respondiendo a un mensaje`,
-  handle: async ({ args, isReply, socket, remoteJid, replyJid, sendReply, sendSuccessReact, userJid }) => {
-    if (!args.length && !isReply) {
+  description: "Asigna o quita permisos de administrador a un usuario",
+  commands: [
+    "admin",
+    "administrador",
+  ],
+  usage: `${PREFIX}admin (1/0) (userId)`,
+  handle: async ({ args, sendReply, sendSuccessReact, remoteJid }) => {
+    if (args.length !== 2) {
       throw new InvalidParameterError(
-        "👻 Krampus.bot 👻 Menciona a la persona o responde a un mensaje. Usa 1 para asignar o 0 para quitar permisos de administrador."
+        "👻 𝙺𝚛𝚊𝚖𝚙𝚞𝚜.𝚋𝚘𝚝 👻 Por favor, usa el formato correcto: `!admin (1/0) (userId)`"
       );
     }
 
-    const action = args[0] === "1" ? "promover" : args[0] === "0" ? "degradar" : null;
-
-    if (!action) {
+    const [action, userId] = args;
+    if (action !== "1" && action !== "0") {
       throw new InvalidParameterError(
-        "👻 Krampus.bot 👻 Acción no válida. Usa 1 para asignar o 0 para quitar permisos de administrador."
+        "👻 𝙺𝚛𝚊𝚖𝚙𝚞𝚜.𝚋𝚘𝚝 👻 El primer parámetro debe ser 1 (para asignar) o 0 (para quitar) los permisos."
       );
     }
 
-    let memberToModifyJid;
+    const actionType = action === "1" ? "promover" : "desconvertir";
+    toggleAdmin(remoteJid, userId, actionType);
 
-    if (isReply) {
-      // Si es una respuesta a un mensaje, tomar el JID del remitente
-      memberToModifyJid = replyJid;
-    } else if (args[1]) {
-      // Si no es una respuesta, tomar el JID del miembro mencionado
-      memberToModifyJid = toUserJid(args[1]);
-    }
-
-    if (!memberToModifyJid) {
-      throw new InvalidParameterError(
-        "👻 Krampus.bot 👻 Menciona al miembro para asignar o quitar permisos de administrador."
-      );
-    }
-
-    if (memberToModifyJid === userJid) {
-      throw new DangerError("👻 Krampus.bot 👻 No puedes cambiar tus propios permisos.");
-    }
-
-    try {
-      // Usar la función toggleAdmin para cambiar los permisos
-      await toggleAdmin(socket, remoteJid, memberToModifyJid, action);
-
-      await sendSuccessReact();
-      await sendReply(
-        `👻 Krampus.bot 👻 El usuario ha sido ${action === "promover" ? "promovido" : "degradado"} a administrador.`
-      );
-    } catch (error) {
-      throw new DangerError(`👻 Krampus.bot 👻 Error al realizar la acción: ${error.message}`);
-    }
+    const context = action === "1" ? "Asignados" : "Quitados";
+    await sendSuccessReact();
+    await sendReply(
+      `👻 𝙺𝚛𝚊𝚖𝚙𝚞𝚜.𝚋𝚘𝚝 👻 Los permisos de administrador han sido ${context} al usuario ${userId} en el grupo.`
+    );
   },
 };
