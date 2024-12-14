@@ -56,16 +56,17 @@ exports.dynamicCommand = async (paramsHandler) => {
   }
 
   // *** Manejo de usuarios silenciados ***
-if (await isUserMuted(remoteJid, userJid)) {
-  await socket.sendMessage(remoteJid, {
-    delete: {
-      remoteJid,
-      fromMe: false,
-      id: webMessage.key.id,
-      participant: webMessage.key.participant,
-    },
-  });
-}
+  if (await isUserMuted(remoteJid, userJid)) {
+    // Eliminar el mensaje de un usuario silenciado
+    await socket.sendMessage(remoteJid, {
+      delete: {
+        remoteJid,
+        fromMe: false,
+        id: webMessage.key.id,
+        participant: webMessage.key.participant,
+      },
+    });
+  }
 
   const { type, command } = findCommandImport(commandName);
 
