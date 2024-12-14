@@ -1,4 +1,3 @@
-Que te parece esto?
 const { PREFIX } = require("../../config");
 const { InvalidParameterError } = require("../../errors/InvalidParameterError");
 const { DangerError } = require("../../errors/DangerError");
