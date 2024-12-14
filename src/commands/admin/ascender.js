@@ -14,8 +14,7 @@ module.exports = {
       throw new InvalidParameterError("👻 Krampus.bot 👻 Indica la acción ('promover' o 'desconvertir') y el usuario.");
     }
 
-    const action = args[0] === "1";
-    const targetUserJid = args[0] === "0";
+       const action = args[0].toLowerCase();
 
     // Verificar permisos de administrador
      const hasPermission = await checkPermission({ type: "admin", socket, userJid, remoteJid });
