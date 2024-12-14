@@ -3,6 +3,7 @@ const { InvalidParameterError } = require("../../errors/InvalidParameterError");
 const { DangerError } = require("../../errors/DangerError");
 const { checkPermission } = require("../../middlewares/checkpermission");
 const { toggleAdmin } = require("../../utils/database");
+const { toUserJid } = require("../../utils");
 
 module.exports = {
   name: "admin",
@@ -16,10 +17,7 @@ module.exports = {
 
     const action = args[0].toLowerCase();
     const mentionedUsers = webMessage.mentionedJid;
-    if (!mentionedUsers || mentionedUsers.length === 0) {
-      throw new InvalidParameterError("👻 Krampus.bot 👻 Debes mencionar al usuario que deseas promover o degradar.");
-    }
-    const targetUserJid = mentionedUsers[0];
+    const targetUserJid = toUserJid(mentionedUsers[0]);
 
     if (!targetUserJid || !targetUserJid.endsWith("@(link unavailable)")) {
       throw new InvalidParameterError("👻 Krampus.bot 👻 Menciona correctamente al usuario o proporciona su número completo.");
