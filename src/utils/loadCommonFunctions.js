@@ -234,24 +234,24 @@ const updateGroupParticipants = async (jid, participants, action) => {
   
 const toggleAdmin = async (groupId, userId, action) => {
   try {
-    const group = await socket.groupMetadata(groupId);
-    const admins = group.participants.filter((participant) => participant.isAdmin);
-
+    const filename = "admins.json";
+    const admins = readJSON(filename);
+    const groupAdmins = admins[groupId];
+    if (!groupAdmins) {
+      groupAdmins = [];
+      admins[groupId] = groupAdmins;
+    }
     if (action === "promover") {
-      if (!admins.includes(userId)) {
-        await socket.groupParticipantsUpdate(groupId, [userId], "promote");
-        console.log(`Usuario ${userId} promovido a administrador en el grupo ${groupId}`);
-      } else {
-        console.log(`El usuario ${userId} ya es administrador en el grupo ${groupId}`);
+      if (!groupAdmins.includes(userId)) {
+        groupAdmins.push(userId);
       }
-    } else if (action === "degradar") {
-      if (admins.includes(userId)) {
-        await socket.groupParticipantsUpdate(groupId, [userId], "demote");
-        console.log(`Usuario ${userId} degradado de administrador en el grupo ${groupId}`);
-      } else {
-        console.log(`El usuario ${userId} no es administrador en el grupo ${groupId}`);
+    } else if (action === "desconvertir") {
+      const index = groupAdmins.indexOf(userId);
+      if (index !== -1) {
+        groupAdmins.splice(index, 1);
       }
     }
+    writeJSON(filename, admins);
   } catch (error) {
     console.error(`Error al cambiar el rol de administrador: ${error.message}`);
   }
