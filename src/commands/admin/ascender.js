@@ -8,21 +8,28 @@ module.exports = {
   name: "admin",
   description: "Promover o degradar a un miembro como administrador.",
   commands: ["admin", "convertir-admin"],
-  usage: `${PREFIX}admin (1/0) (usuario)`,
+  usage: `${PREFIX}admin (promover/desconvertir) (usuario)`,
   handle: async ({ args, sendReply, sendSuccessReact, remoteJid, userJid, socket }) => {
     if (args.length < 2) {
       throw new InvalidParameterError("👻 Krampus.bot 👻 Indica la acción ('promover' o 'desconvertir') y el usuario.");
     }
 
-       const action = args[0].toLowerCase();
+    const action = args[0].toLowerCase();
+    const targetUserJid = args[1];
 
     // Verificar permisos de administrador
-     const hasPermission = await checkPermission({ type: "admin", socket, userJid, remoteJid });
+    const hasPermission = await checkPermission({
+      type: "admin",
+      socket,
+      userJid,
+      remoteJid,
+    });
+
     if (!hasPermission) {
       throw new DangerError("👻 Krampus.bot 👻 No tienes permisos para realizar esta acción.");
     }
 
-    if (action == "promover" && action == "desconvertir") {
+    if (action !== "promover" && action !== "desconvertir") {
       throw new InvalidParameterError("👻 Krampus.bot 👻 Acción inválida. Usa 'promover' o 'desconvertir'.");
     }
 
