@@ -1,5 +1,7 @@
 const { PREFIX } = require("../../config");
 const { InvalidParameterError } = require("../../errors/InvalidParameterError");
+const { DangerError } = require("../../errors/DangerError");
+const { checkPermission } = require("../../middlewares/checkpermission");
 const { toggleAdmin } = require("../../utils/database");
 
 module.exports = {
@@ -7,22 +9,23 @@ module.exports = {
   description: "Asigna o quita permisos de administrador",
   commands: ["admin"],
   usage: `${PREFIX}admin (promover/desconvertir)`,
-  handle: async ({ args, sendReply, sendSuccessReact, remoteJid, fromMe }) => {
-    if (!args.length || (args[0] !== "promover" && args[0] !== "desconvertir")) {
-      throw new InvalidParameterError(
-        "👻 Krampus.bot 👻 Escribe 'promover' o 'desconvertir' para gestionar los permisos de administrador."
-      );
+  handle: async ({ args, sendReply, sendSuccessReact, remoteJid, userJid, socket }) => {
+    if (!args.length) {
+      throw new InvalidParameterError("👻 Krampus.bot 👻 Indica si quieres promover o desconvertir a un administrador.");
     }
 
-    const action = args[0]; // Puede ser "promover" o "desconvertir"
-
-    if (action === "promover") {
-      await toggleAdmin(remoteJid, fromMe, "promover");
-    } else if (action === "desconvertir") {
-      await toggleAdmin(remoteJid, fromMe, "desconvertir");
+    const action = args[0].toLowerCase();
+    if (action !== "promover" && action !== "desconvertir") {
+      throw new InvalidParameterError("👻 Krampus.bot 👻 Comando inválido. Usa 'promover' o 'desconvertir'.");
     }
 
-    await sendSuccessReact();
+    const hasPermission = await checkPermission({ type: "admin", socket, userJid, remoteJid });
+    if (!hasPermission) {
+      throw new DangerError("👻 Krampus.bot 👻 No tienes permisos para realizar esta acción.");
+    }
+
+    await toggleAdmin(remoteJid, userJid, action);
     await sendReply(`👻 Krampus.bot 👻 El usuario ha sido ${action === "promover" ? "promovido" : "desconvertido"} a administrador.`);
+    await sendSuccessReact();
   },
 };
