@@ -2,7 +2,7 @@ const { PREFIX } = require("../../config");
 const { DangerError } = require("../../errors/DangerError");
 const { InvalidParameterError } = require("../../errors/InvalidParameterError");
 const { toUserJid } = require("../../utils");
-const { toggleAdmin } = require("../../utils/loadcommonfunctions");
+const { toggleAdmin } = require("../../utils/database");
 
 module.exports = {
   name: "admin",
