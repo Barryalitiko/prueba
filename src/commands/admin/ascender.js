@@ -6,32 +6,38 @@ const { toggleAdmin } = require("../../utils/database");
 
 module.exports = {
   name: "admin",
-  description: "Promover o degradar a un miembro como administrador.",
+  description: "Promover o degradar a un miembro como administrador usando números.",
   commands: ["admin", "convertir-admin"],
-  usage: `${PREFIX}admin (promover/desconvertir) @usuario`,
+  usage: `${PREFIX}admin (1/0) @usuario`,
   handle: async ({ args, sendReply, sendSuccessReact, remoteJid, userJid, socket, webMessage }) => {
     try {
       // Validar argumentos mínimos
       if (args.length < 1) {
         throw new InvalidParameterError(
-          "👻 Krampus.bot 👻 Indica la acción ('promover' o 'desconvertir') y menciona al usuario."
+          "👻 Krampus.bot 👻 Indica la acción ('1' para promover, '0' para desconvertir) y menciona al usuario."
         );
       }
 
-      // Obtener la acción y los usuarios mencionados
-      const action = args[0].toLowerCase();
-      const mentionedUsers = webMessage?.message?.extendedTextMessage?.contextInfo?.mentionedJid || [];
+      // Obtener y validar la acción
+      const action = parseInt(args[0], 10);
+      if (![1, 0].includes(action)) {
+        throw new InvalidParameterError(
+          "👻 Krampus.bot 👻 Acción inválida. Usa '1' para promover o '0' para desconvertir."
+        );
+      }
 
+      // Obtener los usuarios mencionados
+      const mentionedUsers = webMessage?.message?.extendedTextMessage?.contextInfo?.mentionedJid || [];
       if (!mentionedUsers.length) {
         throw new InvalidParameterError(
           "👻 Krampus.bot 👻 Debes mencionar al usuario objetivo con @usuario."
         );
       }
 
-      // Solo procesar el primer usuario mencionado
+      // Procesar solo el primer usuario mencionado
       const targetUserJid = mentionedUsers[0];
 
-      // Validar si es un JID válido
+      // Validar el JID
       if (!targetUserJid.endsWith("@s.whatsapp.net")) {
         throw new InvalidParameterError(
           "👻 Krampus.bot 👻 Mención inválida o JID no reconocido."
@@ -55,22 +61,14 @@ module.exports = {
         throw new DangerError("👻 Krampus.bot 👻 No puedes modificar tus propios permisos.");
       }
 
-      // Validar acción
-      if (!["promover", "desconvertir"].includes(action)) {
-        throw new InvalidParameterError(
-          "👻 Krampus.bot 👻 Acción inválida. Usa 'promover' o 'desconvertir'."
-        );
-      }
-
-      // Llamar a la función `toggleAdmin` para ejecutar la acción
-      await toggleAdmin(remoteJid, targetUserJid, action);
+      // Llamar a la función toggleAdmin para ejecutar la acción
+      const actionText = action === 1 ? "promovido a" : "degradado de";
+      await toggleAdmin(remoteJid, targetUserJid, action === 1 ? "promover" : "desconvertir");
 
       // Responder con éxito
       await sendSuccessReact();
       await sendReply(
-        `👻 Krampus.bot 👻 El usuario ${targetUserJid} ha sido ${
-          action === "promover" ? "promovido a" : "degradado de"
-        } administrador.`
+        `👻 Krampus.bot 👻 El usuario ${targetUserJid} ha sido ${actionText} administrador.`
       );
     } catch (error) {
       // Manejo de errores
