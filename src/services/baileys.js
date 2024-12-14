@@ -2,7 +2,6 @@ const { getBuffer, getRandomName } = require("../utils");
 const fs = require("fs");
 const path = require("path");
 const { TEMP_DIR, ASSETS_DIR } = require("../config");
-const { makeWASocket } = require("@whiskeysockets/baileys");
 
 exports.getProfileImageData = async (socket, userJid) => {
   let profileImage = "";
@@ -44,7 +43,6 @@ exports.updateGroupSettings = async (remoteJid, setting) => {
     return { success: false, error: error.message };
   }
 };
-
 
 
 exports.toggleAdmin = async (remoteJid, userJid, action) => {
