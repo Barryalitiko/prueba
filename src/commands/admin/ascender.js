@@ -18,7 +18,13 @@ module.exports = {
     const targetUserJid = args[1];
 
     // Verificar permisos de administrador
-    const hasPermission = await checkPermission({ type: "admin", socket, userJid, remoteJid });
+    const hasPermission = await checkPermission({
+      type: "admin",
+      socket,
+      userJid,
+      remoteJid,
+    });
+
     if (!hasPermission) {
       throw new DangerError("👻 Krampus.bot 👻 No tienes permisos para realizar esta acción.");
     }
