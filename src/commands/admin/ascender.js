@@ -1,40 +1,55 @@
 const { PREFIX } = require("../../config");
 const { DangerError } = require("../../errors/DangerError");
 const { InvalidParameterError } = require("../../errors/InvalidParameterError");
-const { toUserJid, onlyNumbers } = require("../../utils");
-const { toggleAdmin } = require("../../utils/database");
+const { toUserJid } = require("../../utils");
+const { toggleAdmin } = require("../../utils/loadcommonfunctions");
 
 module.exports = {
   name: "admin",
-  description: "Gestionar permisos de administrador",
+  description: "Gestionar permisos de administrador (promover/degradar)",
   usage: `${PREFIX}admin <1/0> @miembro`,
-  handle: async ({ args, isReply, socket, remoteJid, replyJid, sendReply, userJid, sendSuccessReact, }) => {
-    if (!args.length && !isReply) {
-      throw new InvalidParameterError(
-        "👻 𝙺𝚛𝚊𝚖𝚙𝚞𝚜.𝚋𝚘𝚝 👻 Menciona a la persona para asignar o quitar permisos de administrador"
-      );
-    }
-
-    const memberToModifyJid = isReply ? replyJid : toUserJid(args[1]);
-    if (!memberToModifyJid) {
-      throw new InvalidParameterError(
-        "👻 𝙺𝚛𝚊𝚖𝚙𝚞𝚜.𝚋𝚘𝚝 👻 No se pudo obtener el JID del miembro"
-      );
-    }
-
-    const action = args[0];
-    if (action !== "1" && action !== "0") {
-      throw new InvalidParameterError(
-        "👻 𝙺𝚛𝚊𝚖𝚙𝚞𝚜.𝚋𝚘𝚝 👻 Acción no válida. Utiliza 1 para promover o 0 para degradar"
-      );
-    }
-
+  handle: async ({ args, isReply, socket, remoteJid, replyJid, sendReply, sendSuccessReact }) => {
     try {
-      await toggleAdmin(remoteJid, memberToModifyJid, action === "1" ? "promover" : "degradar");
+      // Validar que se proporcione un argumento o una respuesta
+      if (!args.length && !isReply) {
+        throw new InvalidParameterError(
+          "👻 𝙺𝚛𝚊𝚖𝚙𝚞𝚜.𝚋𝚘𝚝 👻 Menciona a un usuario o responde a su mensaje para asignar/quitar permisos de administrador."
+        );
+      }
+
+      // Obtener el JID del miembro objetivo
+      const memberToModifyJid = isReply ? replyJid : toUserJid(args[1]);
+      if (!memberToModifyJid) {
+        throw new InvalidParameterError(
+          "👻 𝙺𝚛𝚊𝚖𝚙𝚞𝚜.𝚋𝚘𝚝 👻 No se pudo identificar al miembro. Asegúrate de mencionar correctamente o responder al mensaje."
+        );
+      }
+
+      // Validar el tipo de acción (1 para promover, 0 para degradar)
+      const action = args[0];
+      if (!["1", "0"].includes(action)) {
+        throw new InvalidParameterError(
+          "👻 𝙺𝚛𝚊𝚖𝚙𝚞𝚜.𝚋𝚘𝚝 👻 Acción no válida. Usa '1' para promover a administrador o '0' para degradar."
+        );
+      }
+
+      // Ejecutar la acción de promoción/degradación
+      const actionText = action === "1" ? "promover" : "degradar";
+      await toggleAdmin(remoteJid, memberToModifyJid, actionText);
+
+      // Enviar confirmación
       await sendSuccessReact();
-      await sendReply(`👻 𝙺𝚛𝚊𝚖𝚙𝚞𝚜.𝚋𝚘𝚝 👻 Permiso de administrador actualizado`);
+      await sendReply(
+        `👻 𝙺𝚛𝚊𝚖𝚙𝚞𝚜.𝚋𝚘𝚝 👻 El usuario fue ${actionText === "promover" ? "promovido a administrador" : "degradado"} correctamente.`
+      );
     } catch (error) {
-      throw new DangerError(`👻 𝙺𝚛𝚊𝚖𝚙𝚞𝚜.𝚋𝚘𝚝 👻 Error al actualizar permiso de administrador: ${error.message}`);
+      // Capturar errores y enviar mensajes personalizados
+      if (error instanceof DangerError || error instanceof InvalidParameterError) {
+        throw error; // Manejo personalizado para estos casos
+      }
+      throw new DangerError(
+        `👻 𝙺𝚛𝚊𝚖𝚙𝚞𝚜.𝚋𝚘𝚝 👻 Hubo un error inesperado al procesar el comando: ${error.message}`
+      );
     }
   },
 };
