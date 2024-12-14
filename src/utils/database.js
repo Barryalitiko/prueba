@@ -229,29 +229,26 @@ exports.removeMute = (groupId, userId) => {
 
 
 exports.toggleAdmin = (groupId, userId, action) => {
-  const filename = "admins.json";
-  const admins = readJSON(filename);
-
-  const groupAdmins = admins[groupId];
-
-  if (!groupAdmins) {
-    groupAdmins = [];
-    admins[groupId] = groupAdmins;
-  }
-
-  if (action === "promover") {
-    if (!groupAdmins.includes(userId)) {
-      groupAdmins.push(userId);
+  try {
+    const filename = "admins.json";
+    const admins = readJSON(filename);
+    const groupAdmins = admins[groupId];
+    if (!groupAdmins) {
+      groupAdmins = [];
+      admins[groupId] = groupAdmins;
     }
-  } else if (action === "desconvertir") {
-    const index = groupAdmins.indexOf(userId);
-    if (index !== -1) {
-      groupAdmins.splice(index, 1);
+    if (action === "promover") {
+      if (!groupAdmins.includes(userId)) {
+        groupAdmins.push(userId);
+      }
+    } else if (action === "desconvertir") {
+      const index = groupAdmins.indexOf(userId);
+      if (index !== -1) {
+        groupAdmins.splice(index, 1);
+      }
     }
+    writeJSON(filename, admins);
+  } catch (error) {
+    console.error(`Error al cambiar el rol de administrador: ${error.message}`);
   }
-
-  writeJSON(filename, admins);
 };
-
-
-
