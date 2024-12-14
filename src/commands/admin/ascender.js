@@ -16,6 +16,9 @@ module.exports = {
 
     const action = args[0].toLowerCase();
     const mentionedUsers = webMessage.mentionedJid;
+    if (!mentionedUsers || mentionedUsers.length === 0) {
+      throw new InvalidParameterError("👻 Krampus.bot 👻 Debes mencionar al usuario que deseas promover o degradar.");
+    }
     const targetUserJid = mentionedUsers[0];
 
     if (!targetUserJid || !targetUserJid.endsWith("@(link unavailable)")) {
