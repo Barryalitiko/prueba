@@ -34,13 +34,7 @@ module.exports = {
     }
 
     // Llamar a la función toggleAdmin para promover o degradar al usuario
-    await toggleAdmin({
-      remoteJid,
-      userJid: targetUserJid,
-      action,
-      socket,
-      sendReply,
-    });
+    await toggleAdmin(remoteJid, targetUserJid, action);
 
     await sendSuccessReact();
   },
