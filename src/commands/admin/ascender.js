@@ -18,18 +18,12 @@ module.exports = {
     const targetUserJid = args[0] === "0";
 
     // Verificar permisos de administrador
-    const hasPermission = await checkPermission({
-      type: "admin",
-      socket,
-      userJid,
-      remoteJid,
-    });
-
+     const hasPermission = await checkPermission({ type: "admin", socket, userJid, remoteJid });
     if (!hasPermission) {
       throw new DangerError("👻 Krampus.bot 👻 No tienes permisos para realizar esta acción.");
     }
 
-    if (action !== "promover" && action !== "desconvertir") {
+    if (action == "promover" && action == "desconvertir") {
       throw new InvalidParameterError("👻 Krampus.bot 👻 Acción inválida. Usa 'promover' o 'desconvertir'.");
     }
 
