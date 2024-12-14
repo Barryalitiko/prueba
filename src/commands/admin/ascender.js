@@ -1,4 +1,4 @@
-const { PREFIX, BOT_NUMBER } = require("../../config");
+const { PREFIX } = require("../../config");
 const { DangerError } = require("../../errors/DangerError");
 const { InvalidParameterError } = require("../../errors/InvalidParameterError");
 const { toUserJid, onlyNumbers } = require("../../utils");
