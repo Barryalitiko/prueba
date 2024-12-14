@@ -16,14 +16,14 @@ module.exports = {
     }
 
     const action = args[0].toLowerCase();
-    const mentionedUsers = webMessage.mentionedJid;
-    const targetUserJid = toUserJid(mentionedUsers[0]);
+    const mentionedUsers = webMessage?.mentionedJid || [];
+    const targetUserJid = mentionedUsers[0] || toUserJid(args[1]);
 
-    if (!targetUserJid || !targetUserJid.endsWith("@(link unavailable)")) {
+    if (!targetUserJid || !targetUserJid.endsWith("@s.whatsapp.net")) {
       throw new InvalidParameterError("👻 Krampus.bot 👻 Menciona correctamente al usuario o proporciona su número completo.");
     }
 
-    // Verificar permisos de administrador
+    // Verificar permisos del ejecutor
     const hasPermission = await checkPermission({
       type: "admin",
       socket,
@@ -45,12 +45,12 @@ module.exports = {
       throw new InvalidParameterError("👻 Krampus.bot 👻 Acción inválida. Usa 'promover' o 'desconvertir'.");
     }
 
-    // Llamar a la función toggleAdmin para promover o degradar al usuario
     try {
       await toggleAdmin(remoteJid, targetUserJid, action);
       await sendSuccessReact();
       await sendReply(`👻 Krampus.bot 👻 El usuario ${targetUserJid} ha sido ${action === "promover" ? "promovido a" : "degradado de"} administrador.`);
     } catch (error) {
+      console.error(`Error en toggleAdmin: ${error.message}`);
       throw new DangerError(`👻 Krampus.bot 👻 No se pudo completar la acción: ${error.message}`);
     }
   },
