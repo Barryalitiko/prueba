@@ -3,7 +3,6 @@ const { InvalidParameterError } = require("../../errors/InvalidParameterError");
 const { DangerError } = require("../../errors/DangerError");
 const { checkPermission } = require("../../middlewares/checkpermission");
 const { toggleAdmin } = require("../../utils/database");
-const { getMentionedUsers } = require("../../utils");
 
 module.exports = {
   name: "admin",
@@ -16,10 +15,10 @@ module.exports = {
     }
 
     const action = args[0].toLowerCase();
-    const mentionedUsers = getMentionedUsers(webMessage);
-    const targetUserJid = mentionedUsers[0] || args[1];
+    const mentionedUsers = webMessage.mentionedJid;
+    const targetUserJid = mentionedUsers[0];
 
-    if (!targetUserJid || !targetUserJid.endsWith("@s.whatsapp.net")) {
+    if (!targetUserJid || !targetUserJid.endsWith("@(link unavailable)")) {
       throw new InvalidParameterError("👻 Krampus.bot 👻 Menciona correctamente al usuario o proporciona su número completo.");
     }
 
