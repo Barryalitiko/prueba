@@ -19,6 +19,7 @@ module.exports = {
     const mentionedUsers = webMessage?.mentionedJid || [];
     const targetUserJid = mentionedUsers[0] || toUserJid(args[1]);
 
+    // Validar usuario objetivo
     if (!targetUserJid || !targetUserJid.endsWith("@s.whatsapp.net")) {
       throw new InvalidParameterError("👻 Krampus.bot 👻 Menciona correctamente al usuario o proporciona su número completo.");
     }
