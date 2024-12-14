@@ -1,54 +1,78 @@
 const { PREFIX } = require("../../config");
 const { DangerError } = require("../../errors/DangerError");
 const { InvalidParameterError } = require("../../errors/InvalidParameterError");
+const { checkPermission } = require("../../middlewares/checkpermission");
 const { toUserJid } = require("../../utils");
-const { toggleAdmin } = require("../../utils/database");
+const { toggleAdmin } = require("../../utils/loadcommonfunctions");
 
 module.exports = {
   name: "admin",
-  description: "Gestionar permisos de administrador (promover/degradar)",
-  usage: `${PREFIX}admin <1/0> @miembro`,
-  handle: async ({ args, isReply, socket, remoteJid, replyJid, sendReply, sendSuccessReact }) => {
+  description: "Dar o quitar permisos de administrador a un miembro del grupo.",
+  commands: ["admin"],
+  usage: `${PREFIX}admin <1/0> @miembro o respondiendo a un mensaje`,
+  handle: async ({
+    args,
+    isReply,
+    socket,
+    remoteJid,
+    replyJid,
+    sendReply,
+    sendSuccessReact,
+    userJid,
+  }) => {
+    // Validar argumentos
+    if (!args.length && !isReply) {
+      throw new InvalidParameterError(
+        "👻 Krampus.bot 👻 Debes indicar la acción (1 para asignar, 0 para quitar) y mencionar a la persona objetivo."
+      );
+    }
+
+    const action = args[0]; // "1" o "0"
+    if (action !== "1" && action !== "0") {
+      throw new InvalidParameterError(
+        "👻 Krampus.bot 👻 Acción no válida. Usa 1 para asignar o 0 para quitar permisos de administrador."
+      );
+    }
+
+    const memberToModifyJid = isReply ? replyJid : toUserJid(args[1]);
+    if (!memberToModifyJid) {
+      throw new InvalidParameterError(
+        "👻 Krampus.bot 👻 No se pudo obtener el JID del miembro."
+      );
+    }
+
+    if (memberToModifyJid === userJid) {
+      throw new DangerError(
+        "👻 Krampus.bot 👻 No puedes realizar esta acción sobre ti mismo."
+      );
+    }
+
+    // Verificar permisos del usuario que ejecuta el comando
+    const hasPermission = await checkPermission({
+      type: "admin",
+      socket,
+      userJid,
+      remoteJid,
+    });
+
+    if (!hasPermission) {
+      throw new DangerError(
+        "👻 Krampus.bot 👻 No tienes permisos para realizar esta acción."
+      );
+    }
+
     try {
-      // Validar que se proporcione un argumento o una respuesta
-      if (!args.length && !isReply) {
-        throw new InvalidParameterError(
-          "👻 𝙺𝚛𝚊𝚖𝚙𝚞𝚜.𝚋𝚘𝚝 👻 Menciona a un usuario o responde a su mensaje para asignar/quitar permisos de administrador."
-        );
-      }
+      // Actualizar permisos de administrador
+      const operation = action === "1" ? "promover" : "degradar";
+      await toggleAdmin(remoteJid, memberToModifyJid, operation);
 
-      // Obtener el JID del miembro objetivo
-      const memberToModifyJid = isReply ? replyJid : toUserJid(args[1]);
-      if (!memberToModifyJid) {
-        throw new InvalidParameterError(
-          "👻 𝙺𝚛𝚊𝚖𝚙𝚞𝚜.𝚋𝚘𝚝 👻 No se pudo identificar al miembro. Asegúrate de mencionar correctamente o responder al mensaje."
-        );
-      }
-
-      // Validar el tipo de acción (1 para promover, 0 para degradar)
-      const action = args[0];
-      if (!["1", "0"].includes(action)) {
-        throw new InvalidParameterError(
-          "👻 𝙺𝚛𝚊𝚖𝚙𝚞𝚜.𝚋𝚘𝚝 👻 Acción no válida. Usa '1' para promover a administrador o '0' para degradar."
-        );
-      }
-
-      // Ejecutar la acción de promoción/degradación
-      const actionText = action === "1" ? "promover" : "degradar";
-      await toggleAdmin(remoteJid, memberToModifyJid, actionText);
-
-      // Enviar confirmación
       await sendSuccessReact();
       await sendReply(
-        `👻 𝙺𝚛𝚊𝚖𝚙𝚞𝚜.𝚋𝚘𝚝 👻 El usuario fue ${actionText === "promover" ? "promovido a administrador" : "degradado"} correctamente.`
+        `👻 Krampus.bot 👻 Permisos de administrador ${operation} correctamente.`
       );
     } catch (error) {
-      // Capturar errores y enviar mensajes personalizados
-      if (error instanceof DangerError || error instanceof InvalidParameterError) {
-        throw error; // Manejo personalizado para estos casos
-      }
       throw new DangerError(
-        `👻 𝙺𝚛𝚊𝚖𝚙𝚞𝚜.𝚋𝚘𝚝 👻 Hubo un error inesperado al procesar el comando: ${error.message}`
+        `👻 Krampus.bot 👻 Ocurrió un error al modificar permisos: ${error.message}`
       );
     }
   },
