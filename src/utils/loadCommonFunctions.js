@@ -234,16 +234,6 @@ const updateGroupParticipants = async (jid, participants, action) => {
   }
 };
 
-  const action = args[0].toLowerCase();
-  if (action === "promover") {
-    await toggleAdmin(remoteJid, userJid, "promover");
-  } else if (action === "desconvertir") {
-    await toggleAdmin(remoteJid, userJid, "desconvertir");
-  }
-
-  // ...
-};
-
 
   return {
     args,
