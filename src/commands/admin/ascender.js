@@ -8,14 +8,14 @@ module.exports = {
   name: "admin",
   description: "Promover o degradar a un miembro como administrador.",
   commands: ["admin", "convertir-admin"],
-  usage: `${PREFIX}admin (promover/desconvertir) (usuario)`,
+  usage: `${PREFIX}admin (1/0) (usuario)`,
   handle: async ({ args, sendReply, sendSuccessReact, remoteJid, userJid, socket }) => {
     if (args.length < 2) {
       throw new InvalidParameterError("👻 Krampus.bot 👻 Indica la acción ('promover' o 'desconvertir') y el usuario.");
     }
 
-    const action = args[0].toLowerCase();
-    const targetUserJid = args[1];
+    const action = args[0] === "1";
+    const targetUserJid = args[0] === "0";
 
     // Verificar permisos de administrador
     const hasPermission = await checkPermission({
