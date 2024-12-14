@@ -1,59 +1,76 @@
-const { PREFIX } = require("../../config");
-const { InvalidParameterError } = require("../../errors/InvalidParameterError");
+const { PREFIX, BOT_NUMBER } = require("../../config");
 const { DangerError } = require("../../errors/DangerError");
-const { checkPermission } = require("../../middlewares/checkpermission");
-const { toggleAdmin } = require("../../utils/database");
-const { toUserJid } = require("../../utils");
+const { InvalidParameterError } = require("../../errors/InvalidParameterError");
+const { toUserJid, onlyNumbers } = require("../../utils");
 
 module.exports = {
   name: "admin",
-  description: "Promover o degradar a un miembro como administrador.",
-  commands: ["admin", "convertir-admin"],
-  usage: `${PREFIX}admin (1/0) @usuario`,
-  handle: async ({ args, sendReply, sendSuccessReact, remoteJid, userJid, socket, webMessage }) => {
-    if (args.length < 1) {
-      throw new InvalidParameterError("👻 Krampus.bot 👻 Indica la acción ('1' para promover o '0' para desconvertir) y menciona al usuario.");
+  description: "Gestionar permisos de administrador",
+  commands: ["promover", "desconvertir"],
+  usage: `${PREFIX}admin promover @miembro
+  
+ou
+  
+${PREFIX}admin desconvertir @miembro`,
+  handle: async ({
+    args,
+    isReply,
+    socket,
+    remoteJid,
+    replyJid,
+    sendReply,
+    userJid,
+    sendSuccessReact,
+  }) => {
+    if (!args.length && !isReply) {
+      throw new InvalidParameterError(
+        "👻 𝙺𝚛𝚊𝚖𝚙𝚞𝚜.𝚋𝚘𝚝 👻 Menciona a la persona para asignar o quitar permisos de administrador"
+      );
     }
 
-    const action = args[0];
-    const mentionedUsers = webMessage.mentionedJid;
-    const targetUserJid = mentionedUsers.length > 0 ? toUserJid(mentionedUsers[0]) : null;
+    // Aseguramos que args[0] y replyJid no sean undefined
+    const memberToModifyJid = isReply ? replyJid : toUserJid(args[0]);
 
-    // Verificar que se haya mencionado un usuario
-    if (!targetUserJid) {
-      throw new InvalidParameterError("👻 Krampus.bot 👻 Menciona correctamente al usuario o proporciona su número completo.");
+    if (!memberToModifyJid) {
+      throw new InvalidParameterError(
+        "👻 𝙺𝚛𝚊𝚖𝚙𝚞𝚜.𝚋𝚘𝚝 👻 No se pudo obtener el JID del miembro"
+      );
     }
 
-    // Verificar permisos de administrador
-    const hasPermission = await checkPermission({
-      type: "admin",
-      socket,
-      userJid,
-      remoteJid,
-    });
+    const memberToModifyNumber = onlyNumbers(memberToModifyJid);
 
-    if (!hasPermission) {
-      throw new DangerError("👻 Krampus.bot 👻 No tienes permisos para realizar esta acción.");
+    // Verificamos que el número sea válido
+    if (memberToModifyNumber.length < 7 || memberToModifyNumber.length > 15) {
+      throw new InvalidParameterError("👻 𝙺𝚛𝚊𝚖𝚙𝚞𝚜.𝚋𝚘𝚝 👻 𝙽𝚞́𝚖𝚎𝚛𝚘 𝚗𝚘 válido");
     }
 
-    // Evitar auto-modificación
-    if (targetUserJid === userJid) {
-      throw new DangerError("👻 Krampus.bot 👻 No puedes modificar tus propios permisos.");
+    if (memberToModifyJid === userJid) {
+      throw new DangerError("👻 𝙺𝚛𝚊𝚖𝚙𝚞𝚜.𝚋𝚘𝚝 👻 No puedes cambiar tus propios permisos");
     }
 
-    // Validar acción (1 para promover, 0 para desconvertir)
-    if (action !== "1" && action !== "0") {
-      throw new InvalidParameterError("👻 Krampus.bot 👻 Acción inválida. Usa '1' para promover o '0' para desconvertir.");
+    const botJid = toUserJid(BOT_NUMBER);
+
+    if (memberToModifyJid === botJid) {
+      throw new DangerError("👻 𝙺𝚛𝚊𝚖𝚙𝚞𝚜.𝚋𝚘𝚝 👻 No se pueden cambiar los permisos del bot");
     }
 
-    // Llamar a la función toggleAdmin para promover o degradar al usuario
-    try {
-      await toggleAdmin(remoteJid, targetUserJid, action === "1" ? "promover" : "desconvertir");
-      await sendSuccessReact();
-      const actionText = action === "1" ? "promovido a" : "degradado de";
-      await sendReply(`👻 Krampus.bot 👻 El usuario ${targetUserJid} ha sido ${actionText} administrador.`);
-    } catch (error) {
-      throw new DangerError(`👻 Krampus.bot 👻 No se pudo completar la acción: ${error.message}`);
+    // Aquí sería donde manejas el cambio de rol del miembro
+    // Suponiendo que `toggleAdmin` sea la función que manejas para promover o quitar permisos
+
+    const action = args[0]; // "promover" o "desconvertir"
+    if (action === "promover") {
+      // Lógica para promover
+      await toggleAdmin(remoteJid, memberToModifyJid, "promover");
+    } else if (action === "desconvertir") {
+      // Lógica para desconvertir
+      await toggleAdmin(remoteJid, memberToModifyJid, "desconvertir");
+    } else {
+      throw new InvalidParameterError(
+        "👻 𝙺𝚛𝚊𝚖𝚙𝚞𝚜.𝚋𝚘𝚝 👻 Comando no válido"
+      );
     }
+
+    await sendSuccessReact();
+    await sendReply("👻 𝙺𝚛𝚊𝚖𝚙𝚞𝚜.𝚋𝚘𝚝 👻 Permiso de administrador actualizado");
   },
 };
