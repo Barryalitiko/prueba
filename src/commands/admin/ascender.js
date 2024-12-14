@@ -9,16 +9,7 @@ module.exports = {
   description: "Asignar o quitar permisos de administrador",
   commands: ["admin", "asignaradmin", "quitaradmin"],
   usage: `${PREFIX}admin (1/0) @miembro o respondiendo a un mensaje`,
-  handle: async ({
-    args,
-    isReply,
-    socket,
-    remoteJid,
-    replyJid,
-    sendReply,
-    sendSuccessReact,
-    userJid,
-  }) => {
+  handle: async ({ args, isReply, socket, remoteJid, replyJid, sendReply, sendSuccessReact, userJid }) => {
     if (!args.length && !isReply) {
       throw new InvalidParameterError(
         "👻 Krampus.bot 👻 Menciona a la persona o responde a un mensaje. Usa 1 para asignar o 0 para quitar permisos de administrador."
