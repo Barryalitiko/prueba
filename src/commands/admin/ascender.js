@@ -9,25 +9,35 @@ module.exports = {
     "admin",
     "administrador",
   ],
-  usage: `${PREFIX}admin (1/0) (userId)`,
+  usage: `${PREFIX}admin (activar/desactivar) (userId)`,
   handle: async ({ args, sendReply, sendSuccessReact, remoteJid }) => {
     if (args.length !== 2) {
       throw new InvalidParameterError(
-        "👻 𝙺𝚛𝚊𝚖𝚙𝚞𝚜.𝚋𝚘𝚝 👻 Por favor, usa el formato correcto: `!admin (1/0) (userId)`"
+        "👻 𝙺𝚛𝚊𝚖𝚙𝚞𝚜.𝚋𝚘𝚝 👻 Por favor, usa el formato correcto: `!admin (activar/desactivar) (userId)`"
       );
     }
 
     const [action, userId] = args;
-    if (action !== "1" && action !== "0") {
+
+    // Validar que action sea "activar" o "desactivar"
+    if (action !== "activar" && action !== "desactivar") {
       throw new InvalidParameterError(
-        "👻 𝙺𝚛𝚊𝚖𝚙𝚞𝚜.𝚋𝚘𝚝 👻 El primer parámetro debe ser 1 (para asignar) o 0 (para quitar) los permisos."
+        "👻 𝙺𝚛𝚊𝚖𝚙𝚞𝚜.𝚋𝚘𝚝 👻 El primer parámetro debe ser 'activar' o 'desactivar'."
       );
     }
 
-    const actionType = action === "1" ? "promover" : "desconvertir";
+    // Validar que userId sea un valor válido
+    if (!userId || userId.length === 0) {
+      throw new InvalidParameterError(
+        "👻 𝙺𝚛𝚊𝚖𝚙𝚞𝚜.𝚋𝚘𝚝 👻 Debes especificar el ID del usuario."
+      );
+    }
+
+    // Acción para promover o desconvertir
+    const actionType = action === "activar" ? "promover" : "desconvertir";
     toggleAdmin(remoteJid, userId, actionType);
 
-    const context = action === "1" ? "Asignados" : "Quitados";
+    const context = action === "activar" ? "Asignados" : "Quitados";
     await sendSuccessReact();
     await sendReply(
       `👻 𝙺𝚛𝚊𝚖𝚙𝚞𝚜.𝚋𝚘𝚝 👻 Los permisos de administrador han sido ${context} al usuario ${userId} en el grupo.`
