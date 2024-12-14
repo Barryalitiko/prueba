@@ -221,6 +221,16 @@ const isUserMuted = (jid) => {
   return mutedUsers[jid] !== undefined;
 };
 
+const updateGroupParticipants = async (jid, participants, action) => {
+  try {
+    await socket.groupParticipantsUpdate(jid, participants, action);
+    return true;
+  } catch (error) {
+    console.error("Error al actualizar participantes del grupo:", error);
+    return false;
+  }
+};
+
   
 
   return {
