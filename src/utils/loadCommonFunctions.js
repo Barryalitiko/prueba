@@ -5,6 +5,9 @@ const fs = require("fs");
 //ATENCION
 const { setTimeout } = require(".");
 const mutedUsers = {};
+const toggleAdmin = async (groupId, userId, action) => {
+  await database.toggleAdmin(groupId, userId, action);
+};
 
 exports.getMentionedUsers = (webMessage) => {
   return webMessage.message.extendedTextMessage?.contextInfo?.mentionedJid || [];
@@ -231,30 +234,14 @@ const updateGroupParticipants = async (jid, participants, action) => {
   }
 };
 
-  
-const toggleAdmin = async (groupId, userId, action) => {
-  try {
-    const filename = "admins.json";
-    const admins = readJSON(filename);
-    const groupAdmins = admins[groupId];
-    if (!groupAdmins) {
-      groupAdmins = [];
-      admins[groupId] = groupAdmins;
-    }
-    if (action === "promover") {
-      if (!groupAdmins.includes(userId)) {
-        groupAdmins.push(userId);
-      }
-    } else if (action === "desconvertir") {
-      const index = groupAdmins.indexOf(userId);
-      if (index !== -1) {
-        groupAdmins.splice(index, 1);
-      }
-    }
-    writeJSON(filename, admins);
-  } catch (error) {
-    console.error(`Error al cambiar el rol de administrador: ${error.message}`);
+  const action = args[0].toLowerCase();
+  if (action === "promover") {
+    await toggleAdmin(remoteJid, userJid, "promover");
+  } else if (action === "desconvertir") {
+    await toggleAdmin(remoteJid, userJid, "desconvertir");
   }
+
+  // ...
 };
 
 
