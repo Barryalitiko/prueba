@@ -229,22 +229,23 @@ exports.removeMute = (groupId, userId) => {
 
 
 exports.toggleAdmin = async (groupId, userId, action) => {
-  const db = readJSON();
+  const filename = "admins"; // Define el archivo de admins
+  const db = readJSON(filename); // Lee el archivo correcto
   if (!db.admins) {
-    db.admins = {};
+    db.admins = {}; // Si no existe la propiedad admins, crea un objeto vacío
   }
   if (!db.admins[groupId]) {
-    db.admins[groupId] = [];
+    db.admins[groupId] = []; // Si no existe el grupo, crea un array vacío
   }
   if (action === "promover") {
     if (!db.admins[groupId].includes(userId)) {
-      db.admins[groupId].push(userId);
+      db.admins[groupId].push(userId); // Promover al usuario
     }
   } else if (action === "desconvertir") {
     const index = db.admins[groupId].indexOf(userId);
     if (index !== -1) {
-      db.admins[groupId].splice(index, 1);
+      db.admins[groupId].splice(index, 1); // Desconvertir al usuario
     }
   }
-  writeJSON(db);
+  writeJSON(filename, db); // Escribe los datos de vuelta en el archivo
 };
