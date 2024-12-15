@@ -266,6 +266,7 @@ const updateGroupParticipants = async (jid, participants, action) => {
     sendWaitReact,
     sendWaitReply,
     sendWarningReact,
+    toggleAdmin, //ATENCION
     sendWarningReply,
     addUserToMutedUsers, //ATENCION
     removeUserFromMutedUsers, //ATENCION
