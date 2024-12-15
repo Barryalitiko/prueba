@@ -1,3 +1,9 @@
+const { getBuffer, getRandomName } = require("../utils");
+const fs = require("fs");
+const path = require("path");
+const { TEMP_DIR, ASSETS_DIR } = require("../config");
+
+
 exports.toggleAdmin = async (remoteJid, userJid, action) => {
   try {
     // Crea una instancia del socket de Baileys
