@@ -1,39 +1,34 @@
-const { PREFIX } = require("../../config");
-const { getProfilePictureUrl } = require("../../utils/loadcommonfunctions");
+const { getProfileImageData } = require("../services/baileys");
+const { PREFIX } = require("../config");
 
 module.exports = {
   name: "fotoperfil",
-  description: "Envía la foto de perfil de un usuario.",
-  commands: ["fotoperfil", "perfil"],
-  usage: `${PREFIX}fotoperfil [@usuario]`,
+  description: "Obtén la foto de perfil de un usuario",
+  commands: ["fotoperfil"],
+  usage: `${PREFIX}fotoperfil @usuario`,
   handle: async ({ args, sendReply, remoteJid, socket }) => {
-    try {
-      let userJid = remoteJid; // Por defecto, se usa el remitente del mensaje
-      if (args.length > 0) {
-        const mentionedUser = args[0];
-        if (!mentionedUser.startsWith("@")) {
-          return await sendReply(
-            "👻 Krampus.bot 👻 Debes mencionar a un usuario con '@'."
-          );
-        }
-        userJid = `${mentionedUser.replace("@", "")}@s.whatsapp.net`;
-      }
+    if (!args.length) {
+      return await sendReply(
+        `👻 Krampus.bot 👻 Por favor, menciona a un usuario para obtener su foto de perfil.\nUso: ${PREFIX}fotoperfil @usuario`
+      );
+    }
 
-      // Obtener la URL de la foto de perfil
-      const profilePictureUrl = await getProfilePictureUrl(userJid, socket);
-      if (profilePictureUrl) {
-        await socket.sendMessage(remoteJid, {
-          image: { url: profilePictureUrl },
-          caption: "👻 Krampus.bot 👻 Aquí tienes la foto de perfil.",
-        });
-      } else {
-        await sendReply(
-          "👻 Krampus.bot 👻 Este usuario no tiene una foto de perfil visible."
-        );
-      }
+    const userJid = args[0]?.includes("@") ? args[0] : `${args[0]}@s.whatsapp.net`;
+
+    try {
+      const { buffer, success } = await getProfileImageData(socket, userJid);
+
+      const caption = success
+        ? `👻 Krampus.bot 👻 Aquí está la foto de perfil del usuario @${args[0].replace("@", "")}.`
+        : `👻 Krampus.bot 👻 No se pudo obtener la foto de perfil del usuario @${args[0].replace("@", "")}.`;
+
+      await socket.sendMessage(remoteJid, {
+        image: buffer,
+        caption,
+        mentions: [userJid],
+      });
     } catch (error) {
-      console.error("Error enviando la foto de perfil:", error);
-      await sendReply("👻 Krampus.bot 👻 No se pudo obtener la foto de perfil.");
+      await sendReply("👻 Krampus.bot 👻 Hubo un error al obtener la foto de perfil. Inténtalo de nuevo más tarde.");
     }
   },
 };
