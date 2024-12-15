@@ -137,11 +137,11 @@ exports.loadCommonFunctions = ({ socket, webMessage }) => {
   };
 
   const sendAudioFromURL = async (url) => {
-    return await socket.sendMessage(remoteJid, {
-      audio: { url },
-      mimetype: "audio/mp4",
-    }, { url, quoted: webMessage });
-  };
+  return await socket.sendMessage(remoteJid, {
+    audio: { url },
+    mimetype: "audio/mpeg", // Cambiado a MP3
+  }, { quoted: webMessage });
+};
 
   const sendVideoFromURL = async (url) => {
     return await socket.sendMessage(remoteJid, {
