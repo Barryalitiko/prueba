@@ -2,6 +2,8 @@ const { PREFIX, BOT_NUMBER } = require("../../config");
 const { DangerError } = require("../../errors/DangerError");
 const { InvalidParameterError } = require("../../errors/InvalidParameterError");
 const { toUserJid, onlyNumbers } = require("../../utils");
+const path = require("path");
+const fs = require("fs");
 
 module.exports = {
   name: "ban",
@@ -32,19 +34,26 @@ ${PREFIX}ban respondiendo a un mensaje`,
     const memberToRemoveNumber = onlyNumbers(memberToRemoveJid);
 
     if (memberToRemoveNumber.length < 7 || memberToRemoveNumber.length > 15) {
-      throw new InvalidParameterError("👻 𝙺𝚛𝚊𝚖𝚙𝚞𝚜.𝚋𝚘𝚝 👻 𝙽𝚞́𝚖𝚎𝚛𝚘 𝚗𝚘 in𝚟𝚊𝚕𝚒𝚍𝚘");
+      throw new InvalidParameterError(
+        "👻 𝙺𝚛𝚊𝚖𝚙𝚞𝚜.𝚋𝚘𝚝 👻 Número inválido"
+      );
     }
 
     if (memberToRemoveJid === userJid) {
-      throw new DangerError("👻 𝙺𝚛𝚊𝚖𝚙𝚞𝚜.𝚋𝚘𝚝 👻 𝙽𝚘 𝚜𝚎 𝚙𝚞𝚎𝚍𝚎 𝚛𝚎𝚊𝚕𝚒𝚣𝚊𝚛 𝚕𝚊 𝚊𝚌𝚌𝚒𝚘́𝚗");
+      throw new DangerError(
+        "👻 𝙺𝚛𝚊𝚖𝚙𝚞𝚜.𝚋𝚘𝚝 👻 No puedes realizar la acción sobre ti mismo"
+      );
     }
 
     const botJid = toUserJid(BOT_NUMBER);
 
     if (memberToRemoveJid === botJid) {
-      throw new DangerError("👻 𝙺𝚛𝚊𝚖𝚙𝚞𝚜.𝚋𝚘𝚝 👻 𝙽𝚘 𝚜𝚎 𝚙𝚞𝚎𝚍𝚎 𝚛𝚎𝚊𝚕𝚒𝚣𝚊𝚛 𝚕𝚊 𝚊𝚌𝚌𝚒𝚘́𝚗");
+      throw new DangerError(
+        "👻 𝙺𝚛𝚊𝚖𝚙𝚞𝚜.𝚋𝚘𝚝 👻 No puedes realizar la acción sobre el bot"
+      );
     }
 
+    // Eliminar al usuario del grupo
     await socket.groupParticipantsUpdate(
       remoteJid,
       [memberToRemoveJid],
@@ -53,6 +62,23 @@ ${PREFIX}ban respondiendo a un mensaje`,
 
     await sendSuccessReact();
 
-    await sendReply("👻 𝙺𝚛𝚊𝚖𝚙𝚞𝚜.𝚋𝚘𝚝 👻 He sacado la basura");
+    // Ruta de la imagen
+    const banImagePath = path.resolve(__dirname, "../../assets/images/ban.jpg");
+
+    if (fs.existsSync(banImagePath)) {
+      // Enviar la imagen si existe
+      await socket.sendMessage(remoteJid, {
+        image: fs.readFileSync(banImagePath),
+        caption: `👻 𝙺𝚛𝚊𝚖𝚙𝚞𝚜.𝚋𝚘𝚝 👻 Usuario expulsado: @${
+          memberToRemoveNumber
+        }`,
+        mentions: [memberToRemoveJid],
+      });
+    } else {
+      // Enviar mensaje si la imagen no se encuentra
+      await sendReply(
+        `👻 𝙺𝚛𝚊𝚖𝚙𝚞𝚜.𝚋𝚘𝚝 👻 He sacado la basura, pero no encontré la imagen de ban.`
+      );
+    }
   },
 };
