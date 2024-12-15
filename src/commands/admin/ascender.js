@@ -19,12 +19,16 @@ module.exports = {
       throw new InvalidParameterError("👻 Krampus.bot 👻 Comando inválido. Usa 'promover' o 'desconvertir'.");
     }
 
+    // Verificar permisos del usuario
     const hasPermission = await checkPermission({ type: "admin", socket, userJid, remoteJid });
     if (!hasPermission) {
       throw new DangerError("👻 Krampus.bot 👻 No tienes permisos para realizar esta acción.");
     }
 
+    // Cambiar el estado del administrador
     await toggleAdmin(remoteJid, userJid, action);
+
+    // Responder al usuario
     await sendReply(`👻 Krampus.bot 👻 El usuario ha sido ${action === "promover" ? "promovido" : "desconvertido"} a administrador.`);
     await sendSuccessReact();
   },
