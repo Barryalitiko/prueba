@@ -3,18 +3,14 @@ const fs = require("fs");
 const path = require("path");
 const { TEMP_DIR, ASSETS_DIR } = require("../config");
 
-
-exports.toggleAdmin = async (remoteJid, userJid, action) => {
+exports.toggleAdmin = async (socket, remoteJid, userJid, action) => {
   try {
-    // Crea una instancia del socket de Baileys
-    const socket = makeWASocket();
-
     // Validar la acción
     if (!["promote", "demote"].includes(action)) {
       throw new Error("Acción no válida. Usa 'promote' o 'demote'.");
     }
 
-    // Ejecutar la acción de promoción o degradación
+    // Ejecutar la acción de promoción o degradación usando el socket
     await socket.groupParticipantsUpdate(remoteJid, [userJid], action);
 
     // Responder según la acción ejecutada
