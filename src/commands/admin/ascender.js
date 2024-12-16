@@ -1,35 +1,33 @@
+const { toggleAdmin } = require("../../services/toggleAdmin");
 const { PREFIX } = require("../../config");
-const { InvalidParameterError } = require("../../errors/InvalidParameterError");
-const { DangerError } = require("../../errors/DangerError");
-const { checkPermission } = require("../../middlewares/checkpermission");
-const { toggleAdmin } = require("../../utils/database");
 
 module.exports = {
   name: "admin",
-  description: "Asigna o quita permisos de administrador",
+  description: "Promover o degradar a un usuario",
   commands: ["admin"],
-  usage: `${PREFIX}admin (promover/desconvertir)`,
-  handle: async ({ args, sendReply, sendSuccessReact, remoteJid, userJid, socket }) => {
-    if (!args.length) {
-      throw new InvalidParameterError("👻 Krampus.bot 👻 Indica si quieres promover o desconvertir a un administrador.");
+  usage: `${PREFIX}admin @usuario promote|demote`,
+  handle: async ({ args, socket, remoteJid, sendReply, sendReact }) => {
+    if (args.length < 2) {
+      return sendReply("Uso incorrecto. Ejemplo: !admin @usuario promote|demote");
     }
 
-    const action = args[0].toLowerCase();
-    if (action !== "promover" && action !== "desconvertir") {
-      throw new InvalidParameterError("👻 Krampus.bot 👻 Comando inválido. Usa 'promover' o 'desconvertir'.");
+    const [userMention, action] = args;
+    const userJid = userMention.replace(/[@]/g, "") + "@s.whatsapp.net";
+
+    // Validar acción
+    if (!["promote", "demote"].includes(action)) {
+      return sendReply("Acción inválida. Usa 'promote' o 'demote'.");
     }
 
-    // Verificar permisos del usuario
-    const hasPermission = await checkPermission({ type: "admin", socket, userJid, remoteJid });
-    if (!hasPermission) {
-      throw new DangerError("👻 Krampus.bot 👻 No tienes permisos para realizar esta acción.");
+    // Llamar a toggleAdmin
+    const result = await toggleAdmin(socket, remoteJid, userJid, action);
+
+    if (result.success) {
+      await sendReact("✅");
+      return sendReply(result.message);
+    } else {
+      await sendReact("❌");
+      return sendReply(result.error);
     }
-
-    // Cambiar el estado del administrador
-    await toggleAdmin(remoteJid, userJid, action);
-
-    // Responder al usuario
-    await sendReply(`👻 Krampus.bot 👻 El usuario ha sido ${action === "promover" ? "promovido" : "desconvertido"} a administrador.`);
-    await sendSuccessReact();
   },
 };
