@@ -229,7 +229,7 @@ exports.removeMute = (groupId, userId) => {
 
 
 exports.toggleAdmin = async (groupId, userId, action) => {
-  const filename = "admins"; // Define el archivo de admins
+  const filename = "admins.json"; // Define el archivo de admins
   const db = readJSON(filename); // Lee el archivo correcto
   if (!db.admins) {
     db.admins = {}; // Si no existe la propiedad admins, crea un objeto vacío
