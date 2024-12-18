@@ -26,7 +26,7 @@ module.exports = {
     await sendReact("🔞");
 
     // Enviar el mensaje con la etiqueta de la persona que usó el comando + la persona aleatoria y el GIF
-    await sendImageFromFile(
+    await sendVideoAsGif(
       path.join(ASSETS_DIR, "images", "20042632.gif"), 
       `@${userJid.split("@")[0]} te ha mandado un beso 😘\nY @${randomUser.id.split("@")[0]} también recibe un beso!`, 
       mentions
