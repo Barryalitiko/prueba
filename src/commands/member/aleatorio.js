@@ -5,7 +5,7 @@ const path = require("path");
 module.exports = {
   name: "randommention",
   description: "Mencionar a una persona aleatoria junto con un mensaje.",
-  commands: ["randommention", "rm"],
+  commands: ["randommention", "sx"],
   usage: `${PREFIX}sx`,
   handle: async ({ socket, remoteJid, senderJid, sendMedia, sendReact }) => {
     try {
