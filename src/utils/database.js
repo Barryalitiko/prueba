@@ -228,24 +228,27 @@ exports.removeMute = (groupId, userId) => {
 //NUEVO
 
 
-exports.toggleAdmin = async (groupId, userId, action) => {
-  const filename = "admins.json"; // Define el archivo de admins
-  const db = readJSON(filename); // Lee el archivo correcto
-  if (!db.admins) {
-    db.admins = {}; // Si no existe la propiedad admins, crea un objeto vacío
-  }
-  if (!db.admins[groupId]) {
-    db.admins[groupId] = []; // Si no existe el grupo, crea un array vacío
-  }
-  if (action === "promover") {
-    if (!db.admins[groupId].includes(userId)) {
-      db.admins[groupId].push(userId); // Promover al usuario
+exports.toggleAdmin = async (socket, groupId, userId) => {
+  try {
+    // Obtener detalles del grupo
+    const groupMetadata = await socket.groupMetadata(groupId);
+
+    // Verificar si el usuario ya es administrador
+    const isAdmin = groupMetadata.participants.some(
+      (participant) => participant.id === userId && participant.admin
+    );
+
+    if (isAdmin) {
+      // Revocar permisos de administrador
+      await socket.groupParticipantsUpdate(groupId, [userId], "demote");
+      return `Se revocaron los permisos de administrador para el usuario ${userId}`;
+    } else {
+      // Otorgar permisos de administrador
+      await socket.groupParticipantsUpdate(groupId, [userId], "promote");
+      return `Se otorgaron permisos de administrador al usuario ${userId}`;
     }
-  } else if (action === "desconvertir") {
-    const index = db.admins[groupId].indexOf(userId);
-    if (index !== -1) {
-      db.admins[groupId].splice(index, 1); // Desconvertir al usuario
-    }
+  } catch (error) {
+    console.error("Error en toggleAdmin:", error);
+    throw new Error("No se pudo alternar el estado de administrador. Verifica los datos proporcionados.");
   }
-  writeJSON(filename, db); // Escribe los datos de vuelta en el archivo
 };
