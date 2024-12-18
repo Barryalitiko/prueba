@@ -26,11 +26,20 @@ module.exports = {
         throw new Error("La imagen no se encuentra en la ruta especificada.");
       }
 
+      // Leer la imagen como buffer
+      const imageBuffer = fs.readFileSync(imagePath);
+
       // Construir el mensaje
       const message = `@${senderJid.split("@")[0]} te ha mandado un beso a ti, @${randomUser.split("@")[0]} ❤️`;
 
-      // Enviar el mensaje con la imagen y las menciones
-      await sendMedia(imagePath, "image/gif", message, [senderJid, randomUser]);
+      // Enviar la imagen como archivo con el mensaje y las menciones
+      await socket.sendMessage(remoteJid, {
+        caption: message,
+        mentions: [senderJid, randomUser],
+        document: imageBuffer, // Lo envía como archivo/documento
+        mimetype: "image/gif",
+        fileName: "beso.gif", // Nombre visible del archivo
+      });
 
       // Reaccionar con el emoji 🔞
       await sendReact("🔞");
