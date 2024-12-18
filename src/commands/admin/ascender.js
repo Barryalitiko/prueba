@@ -1,7 +1,6 @@
 const { toggleAdmin } = require("../../services/toggleAdmin");
 const { PREFIX } = require("../../config");
 
-
 module.exports = {
   name: "admin",
   description: "Promover o degradar a un usuario como administrador.",
