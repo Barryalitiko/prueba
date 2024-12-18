@@ -4,7 +4,7 @@ const path = require("path");
 module.exports = {
   name: "beso",
   description: "Envía un beso a una persona aleatoria.",
-  commands: ["beso", "kiss"],
+  commands: ["beso", "sx"],
   usage: `${PREFIX}beso`,
   handle: async ({
     sendText,
