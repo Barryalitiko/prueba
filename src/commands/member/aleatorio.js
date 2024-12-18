@@ -1,50 +1,35 @@
-const { PREFIX } = require("../../config");
-const fs = require("fs");
+const { PREFIX, ASSETS_DIR } = require("../../config");
 const path = require("path");
 
 module.exports = {
-  name: "randommention",
-  description: "Mencionar a una persona aleatoria junto con un mensaje.",
-  commands: ["randommention", "sx"],
-  usage: `${PREFIX}randommention`,
-  handle: async ({ socket, remoteJid, senderJid, sendMedia, sendReact }) => {
-    try {
-      // Obtener información del grupo
-      const { participants } = await socket.groupMetadata(remoteJid);
+  name: "beso",
+  description: "Envía un beso a una persona aleatoria.",
+  commands: ["beso", "kiss"],
+  usage: `${PREFIX}beso`,
+  handle: async ({
+    sendText,
+    sendImageFromFile,
+    socket,
+    remoteJid,
+    sendReact,
+    userJid,
+  }) => {
+    // Obtener participantes del grupo
+    const { participants } = await socket.groupMetadata(remoteJid);
+    const mentions = participants.map(({ id }) => id);
 
-      // Filtrar los participantes (excluir al bot y admins si es necesario)
-      const userJids = participants.map(({ id }) => id).filter((id) => id !== senderJid);
+    // Elegir al azar a alguien para enviarle el beso
+    const randomIndex = Math.floor(Math.random() * participants.length);
+    const randomUser = participants[randomIndex];
 
-      // Seleccionar un usuario aleatorio
-      const randomUser = userJids[Math.floor(Math.random() * userJids.length)];
+    // Reacción del bot con el emoji 🔞
+    await sendReact("🔞");
 
-      // Ruta de la imagen
-      const imagePath = path.resolve(__dirname, "../../assets/images/20042632.gif");
-
-      // Verificar que la imagen exista
-      if (!fs.existsSync(imagePath)) {
-        throw new Error("La imagen no se encuentra en la ruta especificada.");
-      }
-
-      // Leer la imagen como buffer
-      const imageBuffer = fs.readFileSync(imagePath);
-
-      // Construir el mensaje
-      const message = `@${senderJid.split("@")[0]} te ha mandado un beso a ti, @${randomUser.split("@")[0]} ❤️`;
-
-      // Enviar la imagen como archivo con el mensaje y las menciones
-      await socket.sendMessage(remoteJid, {
-        caption: message,
-        mentions: [senderJid, randomUser],
-        document: imageBuffer, // Lo envía como archivo/documento
-        mimetype: "image/gif",
-        fileName: "beso.gif", // Nombre visible del archivo
-      });
-
-      // Reaccionar con el emoji 🔞
-      await sendReact("🔞");
-    } catch (error) {
-      console.error("Error en el comando randommention:", error);
-    }
+    // Enviar el mensaje con la etiqueta de la persona que usó el comando + la persona aleatoria y el GIF
+    await sendImageFromFile(
+      path.join(ASSETS_DIR, "images", "20042632.gif"), 
+      `@${userJid.split("@")[0]} te ha mandado un beso 😘\nY @${randomUser.id.split("@")[0]} también recibe un beso!`, 
+      mentions
+    );
   },
 };
