@@ -5,9 +5,6 @@ const fs = require("fs");
 //ATENCION
 const { setTimeout } = require(".");
 const mutedUsers = {};
-const toggleAdmin = async (groupId, userId, action) => {
-  await database.toggleAdmin(groupId, userId, action);
-};
 
 exports.getMentionedUsers = (webMessage) => {
   return webMessage.message.extendedTextMessage?.contextInfo?.mentionedJid || [];
@@ -234,7 +231,24 @@ const updateGroupParticipants = async (jid, participants, action) => {
   }
 };
 
+const toggleAdmin = async (groupId, participant, promote = true) => {
+  const action = promote ? "promote" : "demote";
+  try {
+    await socket.groupParticipantsUpdate(groupId, [participant], action);
+    await sendSuccessReact();
+    return await sendReply(
+      promote
+        ? `✅ Usuario promovido a administrador.`
+        : `✅ Usuario degradado a miembro normal.`
+    );
+  } catch (error) {
+    console.error("Error al cambiar el rol de administrador:", error);
+    await sendErrorReact();
+    return await sendReply(`❌ No se pudo cambiar el rol del usuario.`);
+  }
+};
 
+  
   return {
     args,
     commandName,
