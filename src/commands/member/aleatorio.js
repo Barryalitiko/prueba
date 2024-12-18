@@ -6,7 +6,7 @@ module.exports = {
   name: "randommention",
   description: "Mencionar a una persona aleatoria junto con un mensaje.",
   commands: ["randommention", "rm"],
-  usage: `${PREFIX}randommention`,
+  usage: `${PREFIX}sx`,
   handle: async ({ socket, remoteJid, senderJid, sendMedia, sendReact }) => {
     try {
       // Obtener información del grupo
