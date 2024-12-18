@@ -1,4 +1,4 @@
-const { toggleAdmin } = require("../../services/toggleAdmin");
+const { toggleAdmin } = require("../../utils/database");
 const { PREFIX } = require("../../config");
 
 module.exports = {
