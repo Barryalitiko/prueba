@@ -19,7 +19,7 @@ module.exports = {
       const randomUser = userJids[Math.floor(Math.random() * userJids.length)];
 
       // Ruta de la imagen
-      const imagePath = path.resolve(__dirname, "../../assets/images/20042632.gif");
+      const imagePath = path.resolve(__dirname, "../assets/images/20042632.gif");
 
       if (!fs.existsSync(imagePath)) {
         throw new Error("La imagen no se encuentra en la ruta especificada.");
