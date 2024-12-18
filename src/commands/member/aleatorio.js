@@ -1,31 +1,40 @@
 const { PREFIX } = require("../../config");
+const fs = require("fs");
+const path = require("path");
 
 module.exports = {
-  name: "aleatorio",
-  description: "Menciona a un miembro del grupo al azar.",
-  commands: ["aleatorio", "random"],
-  usage: `${PREFIX}aleatorio`,
-  handle: async ({ socket, remoteJid, sendReply, sendReact }) => {
+  name: "randommention",
+  description: "Mencionar a una persona aleatoria junto con un mensaje.",
+  commands: ["randommention", "rm"],
+  usage: `${PREFIX}randommention`,
+  handle: async ({ socket, remoteJid, senderJid, sendMedia, sendReact }) => {
     try {
-      // Obtén la lista de participantes del grupo
-      const groupMetadata = await socket.groupMetadata(remoteJid);
-      const participants = groupMetadata.participants;
+      // Obtener información del grupo
+      const { participants } = await socket.groupMetadata(remoteJid);
 
-      // Verifica si hay participantes en el grupo
-      if (participants.length === 0) {
-        return sendReply("👻 Krampus.bot 👻 No hay participantes en este grupo.");
+      // Filtrar los participantes (excluir al bot y admins si es necesario)
+      const userJids = participants.map(({ id }) => id).filter((id) => id !== senderJid);
+
+      // Seleccionar un usuario aleatorio
+      const randomUser = userJids[Math.floor(Math.random() * userJids.length)];
+
+      // Ruta de la imagen
+      const imagePath = path.resolve(__dirname, "../../assets/images/20042632.gif");
+
+      if (!fs.existsSync(imagePath)) {
+        throw new Error("La imagen no se encuentra en la ruta especificada.");
       }
 
-      // Selecciona un participante al azar
-      const randomIndex = Math.floor(Math.random() * participants.length);
-      const randomParticipant = participants[randomIndex].id;
+      // Construir el mensaje
+      const message = `@${senderJid.split("@")[0]} te ha mandado un beso a ti, @${randomUser.split("@")[0]} ❤️`;
 
-      // Envía la mención al participante
-      await sendReact("🎲");
-      await sendReply(`¡Mencionando a alguien al azar! 🎲\n@${randomParticipant.split("@")[0]}`, [randomParticipant]);
+      // Enviar el mensaje con la imagen
+      await sendMedia(imagePath, "image/gif", message, [senderJid, randomUser]);
+
+      // Reaccionar con el emoji 🔞
+      await sendReact("🔞");
     } catch (error) {
-      console.error("Error en el comando aleatorio:", error);
-      await sendReply("👻 Krampus.bot 👻 Hubo un error al intentar mencionar a alguien.");
+      console.error("Error en el comando randommention:", error);
     }
   },
 };
