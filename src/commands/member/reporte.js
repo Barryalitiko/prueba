@@ -3,7 +3,7 @@ const { PREFIX } = require("../../config");
 module.exports = {
   name: "etiquetarAdmins",
   description: "Menciona a todos los administradores del grupo.",
-  commands: ["etiquetarAdmins", "tagAdmins"],
+  commands: ["admin", "r"],
   usage: `${PREFIX}etiquetarAdmins`,
   handle: async ({ sendReply, socket, remoteJid }) => {
     try {
