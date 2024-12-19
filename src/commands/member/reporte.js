@@ -22,7 +22,9 @@ module.exports = {
       // Construir el mensaje y las menciones
       const mentions = admins.map((admin) => admin.id);
       const message = `👻 Krampus.bot 👻 Aquí están los administradores del grupo:\n` +
-        admins.map((admin, index) => `${index + 1}. @${admin.id.split("@")[0]}`).join("\n");
+        admins
+          .map((admin, index) => `${index + 1}. @+${admin.id.split("@")[0]}`) // Cambiar a @+ prefijo
+          .join("\n");
 
       // Enviar el mensaje con las menciones
       await sendReply(message, mentions);
