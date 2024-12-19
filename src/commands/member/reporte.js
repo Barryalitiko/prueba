@@ -3,7 +3,7 @@ const { PREFIX } = require("../../config");
 module.exports = {
   name: "etiquetarAdmins",
   description: "Menciona a todos los administradores del grupo.",
-  commands: ["reporte", "admin", "r"],
+  commands: ["etiquetarAdmins", "tagAdmins"],
   usage: `${PREFIX}etiquetarAdmins`,
   handle: async ({ sendReply, socket, remoteJid }) => {
     try {
@@ -19,15 +19,11 @@ module.exports = {
         return sendReply("No hay administradores en este grupo.");
       }
 
-      // Construir el mensaje y las menciones
-      const mentions = admins.map((admin) => admin.id);
-      const message = `👻 Krampus.bot 👻 Aquí están los administradores del grupo:\n` +
-        admins
-          .map((admin, index) => `${index + 1}. @+${admin.id.split("@")[0]}`) // Cambiar a @+ prefijo
-          .join("\n");
+      // Construir el mensaje
+      const message = `👻 Krampus.bot 👻 Aquí están los administradores del grupo:\n` + admins.map((admin, index) => `${index + 1}. @${(link unavailable).split("@")[0]}`).join("\n");
 
       // Enviar el mensaje con las menciones
-      await sendReply(message, mentions);
+      await sendReply(message, { mentions: admins.map((admin) => (link unavailable)) });
     } catch (error) {
       console.error("Error etiquetando a los administradores:", error);
       sendReply("Ocurrió un error al intentar etiquetar a los administradores.");
