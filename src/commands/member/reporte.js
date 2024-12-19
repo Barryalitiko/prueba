@@ -23,7 +23,7 @@ module.exports = {
       const message = `👻 Krampus.bot 👻 Aquí están los administradores del grupo:\n` + admins.map((admin, index) => `${index + 1}. @${(link unavailable).split("@")[0]}`).join("\n");
 
       // Enviar el mensaje con las menciones
-      await sendReply(message, { mentions: admins.map((admin) => (link unavailable)) });
+ const mentions = admins.map((admin) => admin.id);
     } catch (error) {
       console.error("Error etiquetando a los administradores:", error);
       sendReply("Ocurrió un error al intentar etiquetar a los administradores.");
