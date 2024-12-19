@@ -20,7 +20,7 @@ module.exports = {
       }
 
       // Construir el mensaje
-      const message = `👻 Krampus.bot 👻 Aquí están los administradores del grupo:\n` + admins.map((admin, index) => `${index + 1}. @${(link unavailable).split("@")[0]}`).join("\n");
+      const message = `👻 Krampus.bot 👻 Aquí están los administradores del grupo:\n` + admins.map((admin, index) => `${index + 1}. @${admin.id.split("@")[0]}`).join("\n");
 
       // Enviar el mensaje con las menciones
  const mentions = admins.map((admin) => admin.id);
