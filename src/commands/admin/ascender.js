@@ -1,4 +1,3 @@
-const { toggleAdmin } = require("../../utils/database");
 const { PREFIX } = require("../../config");
 
 module.exports = {
@@ -6,33 +5,36 @@ module.exports = {
   description: "Promover o degradar a un usuario como administrador.",
   commands: ["admin"],
   usage: `${PREFIX}admin promote/demote @usuario`,
-  handle: async ({ args, sendReply, sendReact, remoteJid, socket }) => {
-    // Depuración: Ver qué valores están llegando
-    console.log("args recibidos:", args);
-
+  handle: async ({ args, socket, remoteJid, sendReply, sendReact }) => {
     if (args.length < 2) {
-      return sendReply("Uso incorrecto. Usa: !admin promote/demote @usuario");
+      return sendReply(`Uso incorrecto. Usa:\n${PREFIX}admin promote/demote @usuario`);
     }
 
-    const action = args[0].toLowerCase().trim(); // Asegurarse de que no haya espacios
-    const mentionedJid = args[1]?.replace("@", "").trim() + "@s.whatsapp.net";
+    const action = args[0].toLowerCase(); // Acción: "promote" o "demote"
+    const userJid = args[1].replace("@", "").replace(/[^0-9]/g, "") + "@s.whatsapp.net";
 
-    // Verificar los valores procesados
-    console.log("Acción:", action);
-    console.log("Mencionado:", mentionedJid);
-
+    // Verificar que la acción sea válida
     if (!["promote", "demote"].includes(action)) {
-      return sendReply("Acción inválida. Usa 'promote' o 'demote'.");
+      return sendReply("Acción inválida. Usa 'promote' para dar admin o 'demote' para quitar admin.");
     }
 
-    await sendReact("⏳");
-    const result = await toggleAdmin(socket, remoteJid, mentionedJid, action);
-    if (result.success) {
-      await sendReply(result.message);
-      await sendReact("✅");
-    } else {
-      await sendReply(result.error);
+    try {
+      await sendReact("⏳"); // Reacción mientras procesa
+
+      // Realizar la acción correspondiente
+      if (action === "promote") {
+        await socket.groupParticipantsUpdate(remoteJid, [userJid], "promote");
+        await sendReply(`@${args[1]} ahora es administrador del grupo.`);
+      } else if (action === "demote") {
+        await socket.groupParticipantsUpdate(remoteJid, [userJid], "demote");
+        await sendReply(`@${args[1]} ya no es administrador del grupo.`);
+      }
+
+      await sendReact("✅"); // Reacción de éxito
+    } catch (error) {
+      console.error("Error al cambiar permisos de administrador:", error);
       await sendReact("❌");
+      await sendReply("Ocurrió un error al intentar cambiar los permisos de administrador.");
     }
   },
 };
