@@ -9,6 +9,7 @@ const INACTIVE_AUTO_RESPONDER_GROUPS_FILE = "inactive-auto-responder-groups";
 const ANTI_LINK_GROUPS_FILE = "anti-link-groups";
 const CLOSED_GROUPS_FILE = "closed-groups";
 const MUTE_DATA_FILE = "mute-data";
+const AUTO_APPROVE_GROUPS_FILE = "auto-approve-groups";
 
 // Función auxiliar para crear el archivo si no existe
 function createIfNotExists(fullPath) {
@@ -251,4 +252,22 @@ exports.toggleAdmin = async (socket, groupId, userId) => {
     console.error("Error en toggleAdmin:", error);
     throw new Error("No se pudo alternar el estado de administrador. Verifica los datos proporcionados.");
   }
+};
+
+exports.toggleAutoApprove = (groupId, status) => {
+  const autoApproveGroups = readJSON(AUTO_APPROVE_GROUPS_FILE);
+
+  const index = autoApproveGroups.indexOf(groupId);
+  if (status && index === -1) {
+    autoApproveGroups.push(groupId);
+  } else if (!status && index !== -1) {
+    autoApproveGroups.splice(index, 1);
+  }
+
+  writeJSON(AUTO_APPROVE_GROUPS_FILE, autoApproveGroups);
+};
+
+exports.isAutoApproveActive = (groupId) => {
+  const autoApproveGroups = readJSON(AUTO_APPROVE_GROUPS_FILE);
+  return autoApproveGroups.includes(groupId);
 };
