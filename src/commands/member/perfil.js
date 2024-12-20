@@ -3,11 +3,11 @@ const { PREFIX } = require("../../config");
 module.exports = {
   name: "profilepic",
   description: "Obtén la foto de perfil de un usuario.",
-  commands: ["profilepic", "pfp"],
+  commands: ["perfil", "pfp"],
   usage: `${PREFIX}profilepic @usuario`,
   handle: async ({ args, socket, remoteJid, sendReply, sendReact }) => {
     if (args.length < 1) {
-      await sendReply("Uso incorrecto. Usa el comando así:\n" + `${PREFIX}profilepic @usuario`);
+      await sendReply("Uso incorrecto. Usa el comando así:\n" + `${PREFIX}pfp @usuario`);
       return;
     }
 
