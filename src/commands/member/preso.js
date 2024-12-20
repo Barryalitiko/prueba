@@ -2,9 +2,9 @@ const Canvas = require('canvas');
 const { PREFIX } = require('../../config');
 
 module.exports = {
-  name: 'imagen',
+  name: 'imgvacía',
   description: 'Crea una imagen vacía',
-  usage: `${PREFIX}imagen`,
+  usage: `${PREFIX}imgvacía`,
   execute: async (message) => {
     const canvas = new Canvas.Canvas(400, 400);
     const ctx = canvas.getContext('2d');
