@@ -18,9 +18,10 @@ module.exports = {
       const profilePicUrl = await socket.profilePictureUrl(userJid, "image");
 
       if (profilePicUrl) {
-        await sendReply(`Foto de perfil de @${args[0]}:`);
+        await sendReply(`> Krampus Bot👻
+          procesando...`);
         await sendReact("📸");
-        await socket.sendMessage(remoteJid, { image: { url: profilePicUrl }, caption: `Foto de perfil de @${args[0]}` });
+        await socket.sendMessage(remoteJid, { image: { url: profilePicUrl }, caption: `Foto de perfil de cargada...` });
       } else {
         await sendReply(`No se pudo obtener la foto de perfil de @${args[0]}.`);
       }
