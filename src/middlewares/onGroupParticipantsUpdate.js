@@ -1,7 +1,7 @@
 const { getProfileImageData } = require("../services/baileys");
 const fs = require("fs");
 const { onlyNumbers } = require("../utils");
-const { isActiveWelcomeGroup } = require("../utils/database");
+const { isActiveWelcomeGroup, isActiveAutoApproveGroup } = require("../utils/database");
 const { warningLog } = require("../utils/logger");
 
 exports.onGroupParticipantsUpdate = async ({
@@ -11,6 +11,18 @@ exports.onGroupParticipantsUpdate = async ({
   const remoteJid = groupParticipantsUpdate.id;
   const userJid = groupParticipantsUpdate.participants[0];
 
+  // Auto-approve group join requests
+  if (groupParticipantsUpdate.action === "request" && isActiveAutoApproveGroup(remoteJid)) {
+    try {
+      await socket.groupParticipantsUpdate(remoteJid, [userJid], "accept");
+      console.log(`Solicitud de ${userJid} aprobada automáticamente en el grupo ${remoteJid}`);
+    } catch (error) {
+      warningLog(`Error al aprobar automáticamente la solicitud de ${userJid}: ${error.message}`);
+    }
+    return;
+  }
+
+  // Welcome message for new participants
   if (!isActiveWelcomeGroup(remoteJid)) {
     return;
   }
