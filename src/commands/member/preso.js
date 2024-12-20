@@ -1,4 +1,4 @@
-const { createCanvas } = require('canvas');
+const Canvas = require('canvas');
 const { PREFIX } = require('../../config');
 
 module.exports = {
@@ -6,7 +6,7 @@ module.exports = {
   description: 'Crea una imagen vacía',
   usage: `${PREFIX}imagen`,
   execute: async (message) => {
-    const canvas = createCanvas(400, 400);
+    const canvas = new Canvas.Canvas(400, 400);
     const ctx = canvas.getContext('2d');
 
     // Crea una imagen vacía
