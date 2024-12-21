@@ -1,40 +1,32 @@
-const { createCanvas } = require("canvas");
-const fs = require("fs");
-const path = require("path");
 const { PREFIX } = require("../../config");
+const { createCanvas } = require("canvas");
 
 module.exports = {
-  name: "saludo",
-  description: "Crea una imagen con un saludo personalizado",
-  commands: ["saludo"],
-  usage: `${PREFIX}saludo [nombre]`,
-  handle: async ({ args, sendImageFromFile, sendReply }) => {
+  name: "testcanvas",
+  description: "Genera una imagen de prueba para verificar que canvas funciona correctamente.",
+  commands: ["testcanvas"],
+  usage: `${PREFIX}testcanvas`,
+  handle: async ({ sendImageFromBuffer }) => {
     try {
-      const name = args.join(" ") || "Amigo"; // Nombre del usuario o valor predeterminado
-      const canvas = createCanvas(500, 250);
+      // Crear un lienzo de 250x250
+      const canvas = createCanvas(250, 250);
       const ctx = canvas.getContext("2d");
 
-      // Fondo
-      ctx.fillStyle = "#FFD700"; // Dorado
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-      // Texto de saludo
-      ctx.fillStyle = "#000000"; // Negro
+      // Establecer el fondo y dibujar texto
+      ctx.fillStyle = "#FF6347"; // Color de fondo (rojo tomate)
+      ctx.fillRect(0, 0, 250, 250); // Rellenar el fondo
+      ctx.fillStyle = "white"; // Color del texto
       ctx.font = "30px Arial";
-      ctx.textAlign = "center";
-      ctx.fillText(`¡Hola, ${name}!`, canvas.width / 2, canvas.height / 2);
+      ctx.fillText("¡Canvas Funciona!", 20, 120); // Escribir texto en el lienzo
 
-      // Guardar imagen
-      const outputPath = path.join(__dirname, "saludo.png");
-      const buffer = canvas.toBuffer("image/png");
-      fs.writeFileSync(outputPath, buffer);
+      // Convertir la imagen a un buffer
+      const buffer = canvas.toBuffer();
 
-      // Enviar imagen generada
-      await sendImageFromFile(outputPath, `🎉 Aquí tienes tu saludo, ${name}`);
-      fs.unlinkSync(outputPath); // Eliminar archivo temporal después de enviarlo
+      // Enviar la imagen como respuesta
+      await sendImageFromBuffer(buffer, "Aquí está la prueba de Canvas!");
     } catch (error) {
-      console.error("Error generando la imagen:", error);
-      await sendReply("❌ Ocurrió un error al generar la imagen.");
+      console.error("Error generando la imagen de prueba:", error);
+      await sendReply("❌ Hubo un problema al generar la imagen de prueba.");
     }
   },
 };
