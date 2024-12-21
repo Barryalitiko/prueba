@@ -1,29 +1,22 @@
 const { PREFIX } = require("../../config");
 
+let alarms = {}; // Estructura temporal para almacenar las alarmas (en producción se puede usar una base de datos)
+
 module.exports = {
   name: "alarma",
   description: "Configura una alarma y notifica al usuario correspondiente.",
   commands: ["alarma"],
   usage: `${PREFIX}alarma [minutos] (responde a un mensaje)`,
-  handle: async ({
-    args,
-    isReply,
-    socket,
-    remoteJid,
-    replyJid,
-    sendReply,
-    userJid,
-    quotedMessage,
-  }) => {
+  handle: async ({ args, isReply, socket, remoteJid, replyJid, sendReply, userJid, quotedMessage }) => {
     try {
-      // Verificar si se respondió a un mensaje y si se pasaron minutos
-      if (!isReply || !args.length) {
+      // Verificar si se respondió a un mensaje o si se pasaron minutos
+      if (!isReply && !args.length) {
         return await sendReply(
-          "👻 Krampus.bot 👻 Responde a un mensaje para configurar la alarma y especifica los minutos."
+          "👻 Krampus.bot 👻 Responde a un mensaje para configurar la alarma."
         );
       }
 
-      // Validar los minutos
+      // Validar minutos
       const minutes = parseInt(args[0], 10);
       if (isNaN(minutes) || minutes <= 0) {
         return await sendReply(
@@ -37,32 +30,45 @@ module.exports = {
 
       // Enviar mensaje de confirmación
       await sendReply(
-        `⏰ Alarma configurada para dentro de ${minutes} minutos. Hora de activación: ${finishTime.toLocaleTimeString(
-          "es-ES"
-        )}.`
+        `⏰ Alarma configurada para dentro de ${minutes} minutos. Hora de activación: ${finishTime.toLocaleTimeString("es-ES")}.`
       );
 
-      // Determinar el JID del usuario al que se le debe enviar la notificación
+      // Almacenar el usuario al que se le responde
       let targetJid;
       if (isReply && quotedMessage?.key?.participant) {
-        targetJid = quotedMessage.key.participant; // Usar el participante del mensaje citado
+        targetJid = quotedMessage.key.participant;
       } else {
-        targetJid = remoteJid; // Usar el JID del grupo o usuario si no se respondió a un mensaje
+        targetJid = remoteJid;
       }
 
-      // Configurar la alarma y enviarla después del tiempo especificado
+      // Almacenar la alarma en memoria
+      alarms[remoteJid] = {
+        targetJid,
+        finishTime
+      };
+
       setTimeout(async () => {
         try {
-          const message = `🔔 ¡Hola! Tu alarma programada ha sonado. 🕒 Hora de finalización: ${finishTime.toLocaleTimeString(
-            "es-ES"
-          )}.`;
-          await socket.sendMessage(targetJid, { text: message });
+          // Obtener la información de la alarma
+          const alarm = alarms[remoteJid];
+
+          if (alarm) {
+            const message = `🔔 ¡Hola @${alarm.targetJid}! Tu alarma programada ha sonado. 🕒 Hora de finalización: ${finishTime.toLocaleTimeString("es-ES")}.`;
+            
+            // Enviar el mensaje al usuario etiquetado
+            await socket.sendMessage(remoteJid, {
+              text: message,
+              mentions: [alarm.targetJid]
+            });
+
+            // Eliminar la alarma de memoria
+            delete alarms[remoteJid];
+          }
         } catch (error) {
           console.error("Error notificando la alarma:", error);
         }
       }, minutes * 60000);
 
-      // Registro en consola para verificar la alarma configurada
       console.log(
         `Alarma configurada por ${userJid} para el mensaje de ${replyJid || remoteJid}. Activación en ${minutes} minutos.`
       );
