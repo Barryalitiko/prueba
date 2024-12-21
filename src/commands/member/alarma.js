@@ -5,44 +5,64 @@ module.exports = {
   description: "Configura una alarma y notifica al usuario correspondiente.",
   commands: ["alarma"],
   usage: `${PREFIX}alarma [minutos] (responde a un mensaje)`,
-  handle: async ({ args, quoted, sendReply, remoteJid, replyJid, socket }) => {
+  handle: async ({
+    args,
+    isReply,
+    socket,
+    remoteJid,
+    replyJid,
+    sendReply,
+    userJid,
+    quotedMessage,
+  }) => {
     try {
-      // Verificar si el comando se ejecuta en respuesta a un mensaje
-      if (!quoted) {
-        return await sendReply("👻 Krampus.bot 👻 Responde a un mensaje para configurar la alarma.");
+      // Verificar si se respondió a un mensaje o si se pasaron minutos
+      if (!isReply && !args.length) {
+        return await sendReply(
+          "👻 Krampus.bot 👻 Responde a un mensaje para configurar la alarma."
+        );
       }
 
-      // Verificar si se proporcionaron minutos
+      // Validar minutos
       const minutes = parseInt(args[0], 10);
       if (isNaN(minutes) || minutes <= 0) {
-        return await sendReply("👻 Krampus.bot 👻 Especifica un número válido de minutos.");
+        return await sendReply(
+          "👻 Krampus.bot 👻 Especifica un número válido de minutos."
+        );
       }
 
-      // Obtener información del tiempo
+      // Calcular la hora de finalización
       const now = new Date();
       const finishTime = new Date(now.getTime() + minutes * 60000);
 
-      // Notificar que la alarma ha sido configurada
+      // Enviar mensaje de confirmación
       await sendReply(
         `⏰ Alarma configurada para dentro de ${minutes} minutos. Hora de activación: ${finishTime.toLocaleTimeString(
           "es-ES"
         )}.`
       );
 
-      // Esperar el tiempo especificado y notificar al usuario
+      // Configurar la alarma
       setTimeout(async () => {
         try {
           const message = `🔔 ¡Hola! Tu alarma programada ha sonado. 🕒 Hora de finalización: ${finishTime.toLocaleTimeString(
             "es-ES"
           )}.`;
-          await socket.sendMessage(remoteJid, { text: message }, { quoted: { key: quoted.key } });
+
+          // Enviar mensaje en respuesta al mensaje citado (si existe) o al grupo/chat
+          if (isReply && quotedMessage?.key?.participant) {
+            const targetJid = quotedMessage.key.participant;
+            await socket.sendMessage(targetJid, { text: message }, { quoted: quotedMessage });
+          } else {
+            await socket.sendMessage(remoteJid, { text: message });
+          }
         } catch (error) {
           console.error("Error notificando la alarma:", error);
         }
       }, minutes * 60000);
 
       console.log(
-        `Alarma configurada por ${replyJid} para el mensaje de ${quoted.sender}. Activación en ${minutes} minutos.`
+        `Alarma configurada por ${userJid} para el mensaje de ${replyJid || remoteJid}. Activación en ${minutes} minutos.`
       );
     } catch (error) {
       console.error("Error en el comando alarma:", error);
