@@ -2,62 +2,51 @@ const { PREFIX } = require("../../config");
 
 module.exports = {
   name: "alarma",
-  description: "Configura una alarma para ti o para otro usuario etiquetado.",
+  description: "Configura una alarma y notifica al usuario correspondiente.",
   commands: ["alarma"],
-  usage: `${PREFIX}alarma [tiempo en minutos] [@usuario]`,
-  handle: async ({ args, remoteJid, participants, sendReply, sendMessage, sendSuccessReact }) => {
+  usage: `${PREFIX}alarma [minutos] (responde a un mensaje)`,
+  handle: async ({ args, quoted, sendReply, remoteJid, replyJid, socket }) => {
     try {
-      const date = new Date();
-
-      if (!args.length || isNaN(args[0])) {
-        return await sendReply("❌ Por favor, especifica un tiempo en minutos. Ejemplo: #alarma 10.");
+      // Verificar si el comando se ejecuta en respuesta a un mensaje
+      if (!quoted) {
+        return await sendReply("👻 Krampus.bot 👻 Responde a un mensaje para configurar la alarma.");
       }
 
-      const tiempo = parseInt(args[0]); // Tiempo en minutos
-      const horaInicio = date.toLocaleTimeString("es-ES");
-      const horaFin = new Date(date.getTime() + tiempo * 60000).toLocaleTimeString("es-ES");
-
-      let objetivo = null;
-
-      // Si se menciona un usuario, obtén su JID
-      if (args[1]?.startsWith("@")) {
-        const mencion = args[1].replace("@", "") + "@s.whatsapp.net";
-        objetivo = participants.find((p) => p.id === mencion);
-
-        if (!objetivo) {
-          return await sendReply("❌ No se encontró al usuario mencionado en el grupo.");
-        }
+      // Verificar si se proporcionaron minutos
+      const minutes = parseInt(args[0], 10);
+      if (isNaN(minutes) || minutes <= 0) {
+        return await sendReply("👻 Krampus.bot 👻 Especifica un número válido de minutos.");
       }
 
-      // Mensaje inicial
+      // Obtener información del tiempo
+      const now = new Date();
+      const finishTime = new Date(now.getTime() + minutes * 60000);
+
+      // Notificar que la alarma ha sido configurada
       await sendReply(
-        `⏰ Alarma configurada a las ${horaInicio} para finalizar a las ${horaFin}. ${
-          objetivo ? `El usuario ${args[1]} será notificado.` : ""
-        }`
+        `⏰ Alarma configurada para dentro de ${minutes} minutos. Hora de activación: ${finishTime.toLocaleTimeString(
+          "es-ES"
+        )}.`
       );
 
-      console.log(`🔔 Alarma configurada por ${remoteJid} a las ${horaInicio}, finalizará a las ${horaFin}.`);
-
-      // Configuración de la alarma
+      // Esperar el tiempo especificado y notificar al usuario
       setTimeout(async () => {
-        if (objetivo) {
-          await sendMessage(
-            objetivo.id,
-            `🔔 ¡Tu alarma ha finalizado! Establecida a las ${horaInicio}, ha finalizado a las ${horaFin}.`
-          );
+        try {
+          const message = `🔔 ¡Hola! Tu alarma programada ha sonado. 🕒 Hora de finalización: ${finishTime.toLocaleTimeString(
+            "es-ES"
+          )}.`;
+          await socket.sendMessage(remoteJid, { text: message }, { quoted });
+        } catch (error) {
+          console.error("Error notificando la alarma:", error);
         }
+      }, minutes * 60000);
 
-        await sendReply(
-          `⏰ Alarma finalizada. ${objetivo ? `Se notificó al usuario ${args[1]}.` : ""}`
-        );
-
-        console.log(`🔔 Alarma finalizada para ${remoteJid}${objetivo ? ` y notificada a ${objetivo.id}` : ""}.`);
-      }, tiempo * 60000);
-
-      await sendSuccessReact();
+      console.log(
+        `Alarma configurada por ${replyJid} para el mensaje de ${quoted.sender}. Activación en ${minutes} minutos.`
+      );
     } catch (error) {
-      console.error("❌ Error al configurar la alarma:", error);
-      await sendReply("❌ Hubo un error al configurar la alarma.");
+      console.error("Error en el comando alarma:", error);
+      await sendReply("❌ Ocurrió un problema al configurar la alarma.");
     }
   },
 };
