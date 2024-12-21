@@ -10,14 +10,13 @@ module.exports = {
     isReply,
     socket,
     remoteJid,
-    replyJid,
+    quotedMessage,
     sendReply,
     userJid,
-    quotedMessage,
   }) => {
     try {
-      // Verificar si se respondió a un mensaje o si se pasaron minutos
-      if (!isReply && !args.length) {
+      // Verificar si se respondió a un mensaje
+      if (!isReply || !quotedMessage) {
         return await sendReply(
           "👻 Krampus.bot 👻 Responde a un mensaje para configurar la alarma."
         );
@@ -31,38 +30,42 @@ module.exports = {
         );
       }
 
+      // Obtener el JID del usuario cuyo mensaje fue citado
+      const targetJid = quotedMessage.key.participant || quotedMessage.participant;
+
       // Calcular la hora de finalización
       const now = new Date();
       const finishTime = new Date(now.getTime() + minutes * 60000);
 
-      // Enviar mensaje de confirmación
+      // Confirmar configuración de la alarma
       await sendReply(
-        `⏰ Alarma configurada para dentro de ${minutes} minutos. Hora de activación: ${finishTime.toLocaleTimeString(
+        `⏰ Alarma configurada para ${minutes} minutos. Notificaré a ${targetJid} a las ${finishTime.toLocaleTimeString(
           "es-ES"
         )}.`
       );
 
-      // Configurar la alarma
+      // Configurar el temporizador
       setTimeout(async () => {
         try {
-          const message = `🔔 ¡Hola! Tu alarma programada ha sonado. 🕒 Hora de finalización: ${finishTime.toLocaleTimeString(
+          const message = `🔔 ¡Hola, @${targetJid.split("@")[0]}! Tu alarma programada ha sonado. 🕒 Hora de finalización: ${finishTime.toLocaleTimeString(
             "es-ES"
           )}.`;
 
-          // Enviar mensaje en respuesta al mensaje citado (si existe) o al grupo/chat
-          if (isReply && quotedMessage?.key?.participant) {
-            const targetJid = quotedMessage.key.participant;
-            await socket.sendMessage(targetJid, { text: message }, { quoted: quotedMessage });
-          } else {
-            await socket.sendMessage(remoteJid, { text: message });
-          }
+          await socket.sendMessage(
+            remoteJid,
+            {
+              text: message,
+              mentions: [targetJid],
+            },
+            { quoted: quotedMessage }
+          );
         } catch (error) {
           console.error("Error notificando la alarma:", error);
         }
       }, minutes * 60000);
 
       console.log(
-        `Alarma configurada por ${userJid} para el mensaje de ${replyJid || remoteJid}. Activación en ${minutes} minutos.`
+        `Alarma configurada por ${userJid} para notificar a ${targetJid}. Activación en ${minutes} minutos.`
       );
     } catch (error) {
       console.error("Error en el comando alarma:", error);
