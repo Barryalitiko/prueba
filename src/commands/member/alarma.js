@@ -5,16 +5,25 @@ module.exports = {
   description: "Configura una alarma y notifica al usuario correspondiente.",
   commands: ["alarma"],
   usage: `${PREFIX}alarma [minutos] (responde a un mensaje)`,
-  handle: async ({ args, isReply, socket, remoteJid, replyJid, sendReply, userJid, quotedMessage, }) => {
+  handle: async ({
+    args,
+    isReply,
+    socket,
+    remoteJid,
+    replyJid,
+    sendReply,
+    userJid,
+    quotedMessage,
+  }) => {
     try {
-      // Verificar si se respondió a un mensaje o si se pasaron minutos
-      if (!isReply && !args.length) {
+      // Verificar si se respondió a un mensaje y si se pasaron minutos
+      if (!isReply || !args.length) {
         return await sendReply(
-          "👻 Krampus.bot 👻 Responde a un mensaje para configurar la alarma."
+          "👻 Krampus.bot 👻 Responde a un mensaje para configurar la alarma y especifica los minutos."
         );
       }
 
-      // Validar minutos
+      // Validar los minutos
       const minutes = parseInt(args[0], 10);
       if (isNaN(minutes) || minutes <= 0) {
         return await sendReply(
@@ -33,14 +42,15 @@ module.exports = {
         )}.`
       );
 
-      // Configurar la alarma
+      // Determinar el JID del usuario al que se le debe enviar la notificación
       let targetJid;
       if (isReply && quotedMessage?.key?.participant) {
-        targetJid = quotedMessage.key.participant;
+        targetJid = quotedMessage.key.participant; // Usar el participante del mensaje citado
       } else {
-        targetJid = remoteJid;
+        targetJid = remoteJid; // Usar el JID del grupo o usuario si no se respondió a un mensaje
       }
 
+      // Configurar la alarma y enviarla después del tiempo especificado
       setTimeout(async () => {
         try {
           const message = `🔔 ¡Hola! Tu alarma programada ha sonado. 🕒 Hora de finalización: ${finishTime.toLocaleTimeString(
@@ -52,6 +62,7 @@ module.exports = {
         }
       }, minutes * 60000);
 
+      // Registro en consola para verificar la alarma configurada
       console.log(
         `Alarma configurada por ${userJid} para el mensaje de ${replyJid || remoteJid}. Activación en ${minutes} minutos.`
       );
