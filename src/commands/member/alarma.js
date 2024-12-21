@@ -5,18 +5,10 @@ module.exports = {
   description: "Configura una alarma y notifica al usuario correspondiente.",
   commands: ["alarma"],
   usage: `${PREFIX}alarma [minutos] (responde a un mensaje)`,
-  handle: async ({
-    args,
-    isReply,
-    socket,
-    remoteJid,
-    quotedMessage,
-    sendReply,
-    userJid,
-  }) => {
+  handle: async ({ args, isReply, socket, remoteJid, replyJid, sendReply, userJid, quotedMessage, }) => {
     try {
-      // Verificar si se respondió a un mensaje
-      if (!isReply || !quotedMessage) {
+      // Verificar si se respondió a un mensaje o si se pasaron minutos
+      if (!isReply && !args.length) {
         return await sendReply(
           "👻 Krampus.bot 👻 Responde a un mensaje para configurar la alarma."
         );
@@ -30,42 +22,38 @@ module.exports = {
         );
       }
 
-      // Obtener el JID del usuario cuyo mensaje fue citado
-      const targetJid = quotedMessage.key.participant || quotedMessage.participant;
-
       // Calcular la hora de finalización
       const now = new Date();
       const finishTime = new Date(now.getTime() + minutes * 60000);
 
-      // Confirmar configuración de la alarma
+      // Enviar mensaje de confirmación
       await sendReply(
-        `⏰ Alarma configurada para ${minutes} minutos. Notificaré a ${targetJid} a las ${finishTime.toLocaleTimeString(
+        `⏰ Alarma configurada para dentro de ${minutes} minutos. Hora de activación: ${finishTime.toLocaleTimeString(
           "es-ES"
         )}.`
       );
 
-      // Configurar el temporizador
+      // Configurar la alarma
+      let targetJid;
+      if (isReply && quotedMessage?.key?.participant) {
+        targetJid = quotedMessage.key.participant;
+      } else {
+        targetJid = remoteJid;
+      }
+
       setTimeout(async () => {
         try {
-          const message = `🔔 ¡Hola, @${targetJid.split("@")[0]}! Tu alarma programada ha sonado. 🕒 Hora de finalización: ${finishTime.toLocaleTimeString(
+          const message = `🔔 ¡Hola! Tu alarma programada ha sonado. 🕒 Hora de finalización: ${finishTime.toLocaleTimeString(
             "es-ES"
           )}.`;
-
-          await socket.sendMessage(
-            remoteJid,
-            {
-              text: message,
-              mentions: [targetJid],
-            },
-            { quoted: quotedMessage }
-          );
+          await socket.sendMessage(targetJid, { text: message });
         } catch (error) {
           console.error("Error notificando la alarma:", error);
         }
       }, minutes * 60000);
 
       console.log(
-        `Alarma configurada por ${userJid} para notificar a ${targetJid}. Activación en ${minutes} minutos.`
+        `Alarma configurada por ${userJid} para el mensaje de ${replyJid || remoteJid}. Activación en ${minutes} minutos.`
       );
     } catch (error) {
       console.error("Error en el comando alarma:", error);
