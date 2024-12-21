@@ -1,33 +1,34 @@
-const { PREFIX } = require("../../config");
-const { InvalidParameterError } = require("../../errors/InvalidParameterError");
-const { createCanvas } = require("canvas");
+const { createCanvas, loadImage } = require('canvas');
+const { PREFIX } = require('../../config');
 
 module.exports = {
-  name: "testcanvas",
-  description: "Genera una imagen de prueba para verificar que canvas funciona correctamente.",
-  commands: ["testcanvas"],
-  usage: `${PREFIX}testcanvas`,
-  handle: async ({ sendImageFromBuffer }) => {
-    try {
-      // Crear un lienzo de 250x250
-      const canvas = createCanvas(250, 250);
-      const ctx = canvas.getContext("2d");
+  name: 'canvas',
+  description: 'Crea una imagen con texto y una imagen',
+  usage: `${PREFIX}canvas`,
+  execute: async (message) => {
+    const canvas = createCanvas(400, 200);
+    const ctx = canvas.getContext('2d');
 
-      // Establecer el fondo y dibujar texto
-      ctx.fillStyle = "#FF6347"; // Color de fondo (rojo tomate)
-      ctx.fillRect(0, 0, 250, 250); // Rellenar el fondo
-      ctx.fillStyle = "white"; // Color del texto
-      ctx.font = "30px Arial";
-      ctx.fillText("¡Canvas Funciona!", 20, 120); // Escribir texto en el lienzo
+    // Escribe el texto
+    ctx.font = '30px Impact';
+    ctx.rotate(0.1);
+    ctx.fillText('¡Hola!', 50, 100);
 
-      // Convertir la imagen a un buffer
-      const buffer = canvas.toBuffer();
+    // Dibuja la línea
+    ctx.strokeStyle = 'rgba(0,0,0,0.5)';
+    ctx.beginPath();
+    ctx.lineTo(50, 102);
+    ctx.lineTo(200, 102);
+    ctx.stroke();
 
-      // Enviar la imagen como respuesta
-      await sendImageFromBuffer(buffer, "Aquí está la prueba de Canvas!");
-    } catch (error) {
-      console.error("Error generando la imagen de prueba:", error);
-      await sendReply("❌ Hubo un problema al generar la imagen de prueba.");
-    }
-  },
+    // Carga la imagen
+    loadImage('https://example.com/imagen.png').then((image) => {
+      // Dibuja la imagen
+      ctx.drawImage(image, 250, 50, 100, 100);
+
+      // Envía la imagen
+      const attachment = new Discord.MessageAttachment(canvas.toBuffer(), 'canvas.png');
+      message.channel.send(attachment);
+    });
+  }
 };
