@@ -2,40 +2,62 @@ const { PREFIX } = require("../../config");
 
 module.exports = {
   name: "alarma",
-  description: "Configura una alarma y notifica cuando se active.",
-  commands: ["alarma", "alarm"],
-  usage: `${PREFIX}alarma <duración en minutos>`,
-  handle: async ({ args, sendReply, sendSuccessReact }) => {
+  description: "Configura una alarma para ti o para otro usuario etiquetado.",
+  commands: ["alarma"],
+  usage: `${PREFIX}alarma [tiempo en minutos] [@usuario]`,
+  handle: async ({ args, remoteJid, participants, sendReply, sendMessage, sendSuccessReact }) => {
     try {
-      // Verificar que el usuario proporcionó un tiempo
+      const date = new Date();
+
       if (!args.length || isNaN(args[0])) {
-        return await sendReply("❌ Debes especificar la duración en minutos. Ejemplo: !alarma 10");
+        return await sendReply("❌ Por favor, especifica un tiempo en minutos. Ejemplo: #alarma 10.");
       }
 
-      // Convertir la duración a un número
-      const durationMinutes = parseInt(args[0]);
+      const tiempo = parseInt(args[0]); // Tiempo en minutos
+      const horaInicio = date.toLocaleTimeString("es-ES");
+      const horaFin = new Date(date.getTime() + tiempo * 60000).toLocaleTimeString("es-ES");
 
-      // Registrar la hora actual
-      const now = new Date();
-      const startTime = now.toLocaleTimeString("es-ES");
+      let objetivo = null;
 
-      // Calcular la hora de finalización
-      const alarmTime = new Date(now.getTime() + durationMinutes * 60000); // Añadir los minutos
-      const endTime = alarmTime.toLocaleTimeString("es-ES");
+      // Si se menciona un usuario, obtén su JID
+      if (args[1]?.startsWith("@")) {
+        const mencion = args[1].replace("@", "") + "@s.whatsapp.net";
+        objetivo = participants.find((p) => p.id === mencion);
 
-      // Confirmar la configuración de la alarma
+        if (!objetivo) {
+          return await sendReply("❌ No se encontró al usuario mencionado en el grupo.");
+        }
+      }
+
+      // Mensaje inicial
       await sendReply(
-        `⏰ Alarma configurada.\n\n- **Hora de inicio:** ${startTime}\n- **Duración:** ${durationMinutes} minutos\n- **Hora de finalización:** ${endTime}`
+        `⏰ Alarma configurada a las ${horaInicio} para finalizar a las ${horaFin}. ${
+          objetivo ? `El usuario ${args[1]} será notificado.` : ""
+        }`
       );
 
-      // Enviar una notificación cuando termine la alarma
+      console.log(`🔔 Alarma configurada por ${remoteJid} a las ${horaInicio}, finalizará a las ${horaFin}.`);
+
+      // Configuración de la alarma
       setTimeout(async () => {
-        await sendReply(`🔔 ¡Alarma activada! Han pasado ${durationMinutes} minutos desde ${startTime}.`);
-        await sendSuccessReact(); // React de éxito al finalizar
-      }, durationMinutes * 60000); // Esperar el tiempo especificado
+        if (objetivo) {
+          await sendMessage(
+            objetivo.id,
+            `🔔 ¡Tu alarma ha finalizado! Establecida a las ${horaInicio}, ha finalizado a las ${horaFin}.`
+          );
+        }
+
+        await sendReply(
+          `⏰ Alarma finalizada. ${objetivo ? `Se notificó al usuario ${args[1]}.` : ""}`
+        );
+
+        console.log(`🔔 Alarma finalizada para ${remoteJid}${objetivo ? ` y notificada a ${objetivo.id}` : ""}.`);
+      }, tiempo * 60000);
+
+      await sendSuccessReact();
     } catch (error) {
-      console.error("Error al configurar la alarma:", error);
-      await sendReply("❌ Hubo un problema al configurar la alarma. Inténtalo de nuevo.");
+      console.error("❌ Error al configurar la alarma:", error);
+      await sendReply("❌ Hubo un error al configurar la alarma.");
     }
   },
 };
