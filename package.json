@@ -13,7 +13,7 @@
   "dependencies": {
     "baileys": "github:WhiskeySockets/Baileys",
     "axios": "^1.7.7",
-    "canvas": "^2.9.0",
+    "canvas": "^2.11.2",
     "correios-brasil": "^3.0.6",
     "hercai": "^12.4.0",
     "pino": "^9.5.0",
