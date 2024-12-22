@@ -13,7 +13,6 @@ module.exports = {
     isReply,
     socket,
     remoteJid,
-    replyJid,
     sendReply,
     userJid,
     quotedMessage,
@@ -46,9 +45,16 @@ module.exports = {
       );
 
       // Determinar el usuario objetivo
-      const targetUser = isReply && quotedMessage?.key?.participant
-        ? quotedMessage.key.participant
-        : userJid;
+      const targetUser =
+        isReply && quotedMessage?.key?.participant
+          ? quotedMessage.key.participant
+          : userJid;
+
+      if (!targetUser) {
+        return await sendReply(
+          "❌ No se pudo determinar el usuario objetivo. Responde a un mensaje válido."
+        );
+      }
 
       // Preparar el texto para enviar cuando termine el tiempo
       const alarmMessage = `🔔 La alarma ha terminado @${onlyNumbers(targetUser)}`;
@@ -63,7 +69,9 @@ module.exports = {
           // Obtener la información de la alarma
           const alarmList = alarms[remoteJid] || [];
           const alarmIndex = alarmList.findIndex(
-            (a) => a.targetUser === targetUser && a.finishTime.getTime() === finishTime.getTime()
+            (a) =>
+              a.targetUser === targetUser &&
+              a.finishTime.getTime() === finishTime.getTime()
           );
           if (alarmIndex > -1) {
             const alarm = alarmList[alarmIndex];
