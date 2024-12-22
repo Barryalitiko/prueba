@@ -63,7 +63,7 @@ module.exports = {
           // Obtener la información de la alarma
           const alarmList = alarms[remoteJid] || [];
           const alarmIndex = alarmList.findIndex(
-            (a) => a.targetUser === targetUser && a.finishTime === finishTime
+            (a) => a.targetUser === targetUser && a.finishTime.getTime() === finishTime.getTime()
           );
           if (alarmIndex > -1) {
             const alarm = alarmList[alarmIndex];
