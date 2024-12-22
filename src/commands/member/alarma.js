@@ -1,6 +1,6 @@
 const { PREFIX } = require("../../config");
 
-let alarms = {}; // Estructura temporal para almacenar las alarmas (en producción se puede usar una base de datos)
+let alarms = {};
 
 module.exports = {
   name: "alarma",
@@ -30,39 +30,39 @@ module.exports = {
 
       // Enviar mensaje de confirmación
       await sendReply(
-        `⏰ Alarma configurada para dentro de ${minutes} minutos. Hora de activación: ${finishTime.toLocaleTimeString("es-ES")}.`
+        `⏰ Alarma configurada para dentro de ${minutes} minutos. Hora de activación: ${finishTime.toLocaleTimeString(
+          "es-ES"
+        )}.`
       );
 
-      // Almacenar el usuario al que se le responde
-      let targetJid;
+      // Almacenar el usuario al que se le respondió
+      let targetUser;
       if (isReply && quotedMessage?.key?.participant) {
-        targetJid = quotedMessage.key.participant;
+        targetUser = quotedMessage.key.participant;
       } else {
-        targetJid = remoteJid;
+        targetUser = remoteJid;
       }
 
       // Almacenar la alarma en memoria
-      alarms[remoteJid] = {
-        targetJid,
-        finishTime
-      };
+      alarms[remoteJid] = { targetUser, finishTime };
 
       setTimeout(async () => {
-  try {
-    // Obtener la información de la alarma
-    const alarm = alarms[remoteJid];
-    if (alarm) {
-      const message = `🔔 ¡Hola! Tu alarma programada ha sonado. 🕒 Hora de finalización: ${finishTime.toLocaleTimeString("es-ES")}.`;
-      // Enviar el mensaje al usuario etiquetado
-      await socket.sendMessage(alarm.targetJid, { text: message }, { quoted: quotedMessage });
-      // Eliminar la alarma de memoria
-      delete alarms[remoteJid];
-    }
-  } catch (error) {
-    console.error("Error notificando la alarma:", error);
-  }
-}, minutes * 60000);
-
+        try {
+          // Obtener la información de la alarma
+          const alarm = alarms[remoteJid];
+          if (alarm) {
+            const message = `🔔 ¡Hola @${alarm.targetUser}! Tu alarma programada ha sonado. 🕒 Hora de finalización: ${finishTime.toLocaleTimeString(
+              "es-ES"
+            )}.`;
+            // Enviar el mensaje al usuario etiquetado
+            await socket.sendMessage(remoteJid, { text: message, mentions: [alarm.targetUser] });
+            // Eliminar la alarma de memoria
+            delete alarms[remoteJid];
+          }
+        } catch (error) {
+          console.error("Error notificando la alarma:", error);
+        }
+      }, minutes * 60000);
 
       console.log(
         `Alarma configurada por ${userJid} para el mensaje de ${replyJid || remoteJid}. Activación en ${minutes} minutos.`
