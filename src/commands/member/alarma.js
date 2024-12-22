@@ -45,17 +45,17 @@ module.exports = {
         )}.`
       );
 
-      // Almacenar el usuario al que se le respondió o el que envió el mensaje
-      let targetUser;
-      if (isReply && quotedMessage?.key?.participant) {
-        targetUser = quotedMessage.key.participant;
-      } else {
-        targetUser = userJid;
-      }
+      // Determinar el usuario objetivo
+      const targetUser = isReply && quotedMessage?.key?.participant
+        ? quotedMessage.key.participant
+        : userJid;
+
+      // Preparar el texto para enviar cuando termine el tiempo
+      const alarmMessage = `🔔 La alarma ha terminado @${onlyNumbers(targetUser)}`;
 
       // Almacenar la alarma en memoria
       if (!alarms[remoteJid]) alarms[remoteJid] = [];
-      alarms[remoteJid].push({ targetUser, finishTime });
+      alarms[remoteJid].push({ targetUser, finishTime, alarmMessage });
 
       // Configurar el temporizador para la alarma
       setTimeout(async () => {
@@ -68,14 +68,10 @@ module.exports = {
           if (alarmIndex > -1) {
             const alarm = alarmList[alarmIndex];
 
-            const message = `🔔 La alarma ha terminado @${onlyNumbers(
-              alarm.targetUser
-            )}`;
-
-            // Enviar el mensaje al usuario etiquetado
+            // Enviar el mensaje preparado
             await socket.sendMessage(
               remoteJid,
-              { text: message, mentions: [alarm.targetUser] }
+              { text: alarm.alarmMessage, mentions: [alarm.targetUser] }
             );
 
             // Eliminar la alarma de memoria
