@@ -1,4 +1,6 @@
 const { PREFIX } = require("../../config");
+const { toUserJid, onlyNumbers } = require("../../utils");
+const path = require("path");
 
 let alarms = {};
 
@@ -7,7 +9,7 @@ module.exports = {
   description: "Configura una alarma y notifica al usuario correspondiente.",
   commands: ["alarma"],
   usage: `${PREFIX}alarma [minutos] (responde a un mensaje)`,
-  handle: async ({ args, isReply, socket, remoteJid, replyJid, sendReply, userJid, quotedMessage }) => {
+  handle: async ({ args, isReply, socket, remoteJid, replyJid, sendReply, quotedMessage }) => {
     try {
       // Verificar si se respondió a un mensaje o si se pasaron minutos
       if (!isReply && !args.length) {
@@ -38,7 +40,7 @@ module.exports = {
       // Almacenar el usuario al que se le respondió
       let targetUser;
       if (isReply && quotedMessage?.key?.participant) {
-        targetUser = quotedMessage.key.participant;
+        targetUser = toUserJid(quotedMessage.key.participant); // Normaliza el JID
       } else {
         targetUser = remoteJid;
       }
@@ -46,14 +48,15 @@ module.exports = {
       // Almacenar la alarma en memoria
       alarms[remoteJid] = { targetUser, finishTime };
 
+      // Configurar el temporizador
       setTimeout(async () => {
         try {
           // Obtener la información de la alarma
           const alarm = alarms[remoteJid];
           if (alarm) {
-            const message = `🔔 ¡Hola! @${targetJid.split('@')[0]} Tu alarma programada ha sonado. 🕒 Hora de finalización: ${finishTime.toLocaleTimeString("es-ES")}.`;
+            const message = `🔔 La alarma ha terminado @${onlyNumbers(alarm.targetUser)}`;
             // Enviar el mensaje al usuario etiquetado
-            await socket.sendMessage(remoteJid, { text: message, mentions: [{ jid: alarm.targetUser }] });
+            await socket.sendMessage(remoteJid, { text: message, mentions: [alarm.targetUser] });
             // Eliminar la alarma de memoria
             delete alarms[remoteJid];
           }
@@ -63,7 +66,7 @@ module.exports = {
       }, minutes * 60000);
 
       console.log(
-        `Alarma configurada por ${userJid} para el mensaje de ${replyJid || remoteJid}. Activación en ${minutes} minutos.`
+        `Alarma configurada por ${replyJid || remoteJid} para el usuario ${onlyNumbers(targetUser)}. Activación en ${minutes} minutos.`
       );
     } catch (error) {
       console.error("Error en el comando alarma:", error);
