@@ -51,10 +51,7 @@ module.exports = {
           // Obtener la información de la alarma
           const alarm = alarms[remoteJid];
           if (alarm) {
-            // Obtener el nombre del usuario que configuró la alarma
-            const contact = await socket.getContactById(alarm.targetUser);
-            const username = contact.name;
-            const message = `🔔 ¡Hola! @${username} Tu alarma programada ha sonado. 🕒 Hora de finalización: ${finishTime.toLocaleTimeString("es-ES")}.`;
+            const message = `🔔 ¡Hola! @${args[0]} Tu alarma programada ha sonado. 🕒 Hora de finalización: ${finishTime.toLocaleTimeString("es-ES")}.`;
             // Enviar el mensaje al usuario etiquetado
             await socket.sendMessage(remoteJid, { text: message, mentions: [{ jid: alarm.targetUser }] });
             // Eliminar la alarma de memoria
