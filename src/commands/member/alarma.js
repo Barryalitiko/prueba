@@ -45,33 +45,42 @@ module.exports = {
         )}.`
       );
 
-      // Almacenar el usuario al que se le respondió
+      // Almacenar el usuario al que se le respondió o el que envió el mensaje
       let targetUser;
       if (isReply && quotedMessage?.key?.participant) {
         targetUser = quotedMessage.key.participant;
       } else {
-        targetUser = remoteJid;
+        targetUser = userJid;
       }
 
       // Almacenar la alarma en memoria
-      alarms[remoteJid] = { targetUser, finishTime };
+      if (!alarms[remoteJid]) alarms[remoteJid] = [];
+      alarms[remoteJid].push({ targetUser, finishTime });
 
       // Configurar el temporizador para la alarma
       setTimeout(async () => {
         try {
           // Obtener la información de la alarma
-          const alarm = alarms[remoteJid];
-          if (alarm) {
+          const alarmList = alarms[remoteJid] || [];
+          const alarmIndex = alarmList.findIndex(
+            (a) => a.targetUser === targetUser && a.finishTime === finishTime
+          );
+          if (alarmIndex > -1) {
+            const alarm = alarmList[alarmIndex];
+
             const message = `🔔 La alarma ha terminado @${onlyNumbers(
               alarm.targetUser
             )}`;
+
             // Enviar el mensaje al usuario etiquetado
             await socket.sendMessage(
               remoteJid,
               { text: message, mentions: [alarm.targetUser] }
             );
+
             // Eliminar la alarma de memoria
-            delete alarms[remoteJid];
+            alarmList.splice(alarmIndex, 1);
+            if (alarmList.length === 0) delete alarms[remoteJid];
           }
         } catch (error) {
           console.error("Error notificando la alarma:", error);
@@ -79,7 +88,7 @@ module.exports = {
       }, minutes * 60000);
 
       console.log(
-        `Alarma configurada por ${userJid} para el mensaje de ${replyJid || remoteJid}. Activación en ${minutes} minutos.`
+        `Alarma configurada por ${userJid} para ${targetUser}. Activación en ${minutes} minutos.`
       );
     } catch (error) {
       console.error("Error en el comando alarma:", error);
