@@ -62,15 +62,13 @@ module.exports = {
           // Obtener la información de la alarma
           const alarm = alarms[remoteJid];
           if (alarm) {
-            const userTag = `@${onlyNumbers(alarm.targetUser)}`;
-            const message = `🔔 La alarma ha terminado ${userTag}!`;
+            const message = `🔔 La alarma ha terminado @${onlyNumbers(
+              alarm.targetUser
+            )}`;
             // Enviar el mensaje al usuario etiquetado
             await socket.sendMessage(
               remoteJid,
-              {
-                text: message,
-                mentions: [alarm.targetUser], // Mención real
-              }
+              { text: message, mentions: [alarm.targetUser] }
             );
             // Eliminar la alarma de memoria
             delete alarms[remoteJid];
