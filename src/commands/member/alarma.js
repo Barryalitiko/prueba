@@ -45,12 +45,15 @@ module.exports = {
       );
 
       // Determinar el usuario objetivo
-      const targetUser =
-        isReply && quotedMessage?.key?.participant
-          ? quotedMessage.key.participant
-          : userJid;
-
-      if (!targetUser) {
+      let targetUser;
+      if (isReply && quotedMessage?.key?.participant) {
+        // Si hay una respuesta válida, usar la ID del participante al que se responde
+        targetUser = quotedMessage.key.participant;
+      } else if (!isReply && args.length) {
+        // Si no hay respuesta y hay un argumento, usar el usuario que invoca el comando
+        targetUser = userJid;
+      } else {
+        // Si no se puede determinar el usuario, enviar mensaje de error
         return await sendReply(
           "❌ No se pudo determinar el usuario objetivo. Responde a un mensaje válido."
         );
