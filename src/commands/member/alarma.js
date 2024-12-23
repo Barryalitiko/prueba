@@ -7,7 +7,7 @@ module.exports = {
   name: "alarma",
   description: "Configura una alarma y notifica al usuario correspondiente.",
   commands: ["alarma"],
-  usage: `${PREFIX}alarma [minutos] (responde a un mensaje)`,
+  usage: ${PREFIX}alarma [minutos] (responde a un mensaje),
   handle: async ({
     args,
     isReply,
@@ -39,28 +39,25 @@ module.exports = {
 
       // Enviar mensaje de confirmación
       await sendReply(
-        `⏰ Alarma configurada para dentro de ${minutes} minutos. Hora de activación: ${finishTime.toLocaleTimeString(
+        ⏰ Alarma configurada para dentro de ${minutes} minutos. Hora de activación: ${finishTime.toLocaleTimeString(
           "es-ES"
-        )}.`
+        )}.
       );
 
       // Determinar el usuario objetivo
-      let targetUser;
-      if (isReply && quotedMessage?.key?.participant) {
-        // Si hay una respuesta válida, usar la ID del participante al que se responde
-        targetUser = quotedMessage.key.participant;
-      } else if (!isReply && args.length) {
-        // Si no hay respuesta y hay un argumento, usar el usuario que invoca el comando
-        targetUser = userJid;
-      } else {
-        // Si no se puede determinar el usuario, enviar mensaje de error
+      const targetUser =
+        isReply && quotedMessage?.key?.participant
+          ? quotedMessage.key.participant
+          : userJid;
+
+      if (!targetUser) {
         return await sendReply(
           "❌ No se pudo determinar el usuario objetivo. Responde a un mensaje válido."
         );
       }
 
       // Preparar el texto para enviar cuando termine el tiempo
-      const alarmMessage = `🔔 La alarma ha terminado @${onlyNumbers(targetUser)}`;
+      const alarmMessage = 🔔 La alarma ha terminado @${onlyNumbers(targetUser)};
 
       // Almacenar la alarma en memoria
       if (!alarms[remoteJid]) alarms[remoteJid] = [];
@@ -95,7 +92,7 @@ module.exports = {
       }, minutes * 60000);
 
       console.log(
-        `Alarma configurada por ${userJid} para ${targetUser}. Activación en ${minutes} minutos.`
+        Alarma configurada por ${userJid} para ${targetUser}. Activación en ${minutes} minutos.
       );
     } catch (error) {
       console.error("Error en el comando alarma:", error);
