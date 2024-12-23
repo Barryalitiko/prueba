@@ -1,26 +1,26 @@
 const { PREFIX } = require("../../config");
-const { toUserJid, onlyNumbers } = require("../../utils");
-let userList = require("../../database/userList");
+const { toUserJid } = require("../../utils");
+const database = require("../../utils/database");
 
 module.exports = {
   name: "removefromlist",
   description: "Elimina un usuario de la lista.",
-  usage: `${PREFIX}removefromlist @usuario o respondiendo a un mensaje`,
-  handle: async ({ args, isReply, socket, remoteJid, replyJid, sendReply, quotedMessage }) => {
-    if (!args.length && !isReply) {
-      return await sendReply("👻 Krampus.bot 👻 Menciona o responde a un usuario para eliminarlo de la lista.");
+  usage: `${PREFIX}removefromlist @usuario`,
+  handle: async ({ args, socket, sendReply, quotedMessage }) => {
+    if (!args.length && !quotedMessage) {
+      return await sendReply(`❌ ${PREFIX}removefromlist @usuario`);
     }
 
-    const userToRemoveJid = isReply ? replyJid : toUserJid(args[0]);
-    const userToRemoveNumber = onlyNumbers(userToRemoveJid);
+    const userToRemoveJid = quotedMessage ? quotedMessage.sender : toUserJid(args[0]);
 
-    const index = userList.indexOf(userToRemoveJid);
+    const index = database.userList.indexOf(userToRemoveJid);
 
     if (index === -1) {
       return await sendReply("⚠️ Este usuario no está en la lista.");
     }
 
-    userList.splice(index, 1);
-    await sendReply(`✅ Usuario @${userToRemoveNumber} eliminado de la lista.`, { mentions: [userToRemoveJid] });
+    database.userList.splice(index, 1);
+    database.writeJSON("userList", database.userList);
+    await sendReply(`✅ Usuario @${userToRemoveJid.split("@")[0]} eliminado de la lista.`);
   },
 };
