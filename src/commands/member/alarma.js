@@ -7,7 +7,7 @@ module.exports = {
   name: "alarma",
   description: "Configura una alarma y notifica al usuario correspondiente.",
   commands: ["alarma"],
-  usage: ${PREFIX}alarma [minutos] (responde a un mensaje),
+  usage: `${PREFIX}alarma [minutos] (responde a un mensaje)`,
   handle: async ({
     args,
     isReply,
@@ -18,14 +18,12 @@ module.exports = {
     quotedMessage,
   }) => {
     try {
-      // Verificar si se respondió a un mensaje o si se pasaron minutos
       if (!isReply && !args.length) {
         return await sendReply(
           "👻 Krampus.bot 👻 Responde a un mensaje para configurar la alarma."
         );
       }
 
-      // Validar minutos
       const minutes = parseInt(args[0], 10);
       if (isNaN(minutes) || minutes <= 0) {
         return await sendReply(
@@ -33,22 +31,16 @@ module.exports = {
         );
       }
 
-      // Calcular la hora de finalización
       const now = new Date();
       const finishTime = new Date(now.getTime() + minutes * 60000);
 
-      // Enviar mensaje de confirmación
       await sendReply(
-        ⏰ Alarma configurada para dentro de ${minutes} minutos. Hora de activación: ${finishTime.toLocaleTimeString(
-          "es-ES"
-        )}.
+        `⏰ Alarma configurada para dentro de ${minutes} minutos. Hora de activación: ${finishTime.toLocaleTimeString("es-ES")}.`
       );
 
-      // Determinar el usuario objetivo
-      const targetUser =
-        isReply && quotedMessage?.key?.participant
-          ? quotedMessage.key.participant
-          : userJid;
+      const targetUser = isReply && quotedMessage?.key?.participant
+        ? quotedMessage.key.participant
+        : userJid;
 
       if (!targetUser) {
         return await sendReply(
@@ -56,17 +48,13 @@ module.exports = {
         );
       }
 
-      // Preparar el texto para enviar cuando termine el tiempo
-      const alarmMessage = 🔔 La alarma ha terminado @${onlyNumbers(targetUser)};
+      const alarmMessage = `🔔 La alarma ha terminado @${onlyNumbers(targetUser)}.`;
 
-      // Almacenar la alarma en memoria
       if (!alarms[remoteJid]) alarms[remoteJid] = [];
       alarms[remoteJid].push({ targetUser, finishTime, alarmMessage });
 
-      // Configurar el temporizador para la alarma
       setTimeout(async () => {
         try {
-          // Obtener la información de la alarma
           const alarmList = alarms[remoteJid] || [];
           const alarmIndex = alarmList.findIndex(
             (a) =>
@@ -75,14 +63,10 @@ module.exports = {
           );
           if (alarmIndex > -1) {
             const alarm = alarmList[alarmIndex];
-
-            // Enviar el mensaje preparado
             await socket.sendMessage(
               remoteJid,
               { text: alarm.alarmMessage, mentions: [alarm.targetUser] }
             );
-
-            // Eliminar la alarma de memoria
             alarmList.splice(alarmIndex, 1);
             if (alarmList.length === 0) delete alarms[remoteJid];
           }
@@ -92,7 +76,7 @@ module.exports = {
       }, minutes * 60000);
 
       console.log(
-        Alarma configurada por ${userJid} para ${targetUser}. Activación en ${minutes} minutos.
+        `Alarma configurada por ${userJid} para ${targetUser}. Activación en ${minutes} minutos.`
       );
     } catch (error) {
       console.error("Error en el comando alarma:", error);
