@@ -1,122 +1,101 @@
 const { PREFIX } = require("../../config");
+const { toUserJid, onlyNumbers } = require("../../utils");
 
 let userList = [];
 
 module.exports = {
-  name: "list",
-  description: "Gestiona una lista de usuarios (añadir, ver, eliminar).",
-  commands: ["list"],
-  usage: `${PREFIX}list add/remove/view @usuario (o responde a un mensaje)`,
-  handle: async ({ args, isReply, quotedMessage, sendReply, mentions }) => {
-    try {
-      const action = args[0]?.toLowerCase();
+  name: "listmanager",
+  description: "Administra una lista de usuarios.",
+  commands: ["addtolist", "viewlist", "removefromlist"],
+  usage: `
+    ${PREFIX}addtolist @usuario o respondiendo a un mensaje
+    ${PREFIX}viewlist
+    ${PREFIX}removefromlist @usuario o respondiendo a un mensaje
+  `,
+  handle: async ({
+    args,
+    isReply,
+    socket,
+    remoteJid,
+    replyJid,
+    sendReply,
+    userJid,
+    quotedMessage,
+  }) => {
+    const command = args.shift();
 
-      // Verificar que se indique una acción válida
-      if (!action || !["add", "remove", "view"].includes(action)) {
-        return await sendReply(
-          `⚠️ Usa el comando de la siguiente manera:\n\n` +
-            `➕ Añadir: ${PREFIX}list add @usuario (o responde a un mensaje)\n` +
-            `➖ Eliminar: ${PREFIX}list remove @usuario (o responde a un mensaje)\n` +
-            `👀 Ver lista: ${PREFIX}list view`
+    switch (command) {
+      case "addtolist":
+        if (!args.length && !isReply) {
+          return await sendReply(
+            "👻 Krampus.bot 👻 Menciona o responde a un usuario para añadirlo a la lista."
+          );
+        }
+
+        // Obtener el usuario a añadir
+        const userToAddJid = isReply ? replyJid : toUserJid(args[0]);
+        const userToAddNumber = onlyNumbers(userToAddJid);
+
+        if (userToAddNumber.length < 7 || userToAddNumber.length > 15) {
+          return await sendReply("❌ El número proporcionado no es válido.");
+        }
+
+        // Verificar si ya está en la lista
+        if (userList.includes(userToAddJid)) {
+          return await sendReply("⚠️ Este usuario ya está en la lista.");
+        }
+
+        // Añadir a la lista
+        userList.push(userToAddJid);
+        await sendReply(
+          `✅ Usuario @${userToAddNumber} añadido a la lista.`,
+          { mentions: [userToAddJid] }
         );
-      }
+        break;
 
-      // Acción: Ver la lista
-      if (action === "view") {
+      case "viewlist":
         if (userList.length === 0) {
           return await sendReply("👻 La lista está vacía.");
         }
 
         const formattedList = userList
-          .map((user, index) => `${index + 1}. @${user.split("@")[0]}`)
+          .map((jid, index) => `${index + 1}. @${onlyNumbers(jid)}`)
           .join("\n");
-        return await sendReply(`📋 Lista de usuarios:\n${formattedList}`, {
+
+        await sendReply(`👻 Lista de usuarios:\n\n${formattedList}`, {
           mentions: userList,
         });
-      }
+        break;
 
-      // Determinar el usuario objetivo (de respuesta o menciones)
-      let targetUsers = [];
+      case "removefromlist":
+        if (!args.length && !isReply) {
+          return await sendReply(
+            "👻 Krampus.bot 👻 Menciona o responde a un usuario para eliminarlo de la lista."
+          );
+        }
 
-      if (isReply && quotedMessage?.key?.participant) {
-        targetUsers.push(quotedMessage.key.participant);
-      }
+        // Obtener el usuario a eliminar
+        const userToRemoveJid = isReply ? replyJid : toUserJid(args[0]);
+        const userToRemoveNumber = onlyNumbers(userToRemoveJid);
 
-      if (mentions?.length) {
-        targetUsers = targetUsers.concat(mentions);
-      }
+        // Verificar si está en la lista
+        const index = userList.indexOf(userToRemoveJid);
+        if (index === -1) {
+          return await sendReply("⚠️ Este usuario no está en la lista.");
+        }
 
-      // Validar que haya al menos un usuario objetivo
-      if (targetUsers.length === 0) {
-        return await sendReply(
-          "⚠️ Menciona a un usuario o responde a un mensaje para añadir o eliminar."
+        // Eliminar de la lista
+        userList.splice(index, 1);
+        await sendReply(
+          `✅ Usuario @${userToRemoveNumber} eliminado de la lista.`,
+          { mentions: [userToRemoveJid] }
         );
-      }
+        break;
 
-      // Acción: Añadir a la lista
-      if (action === "add") {
-        const addedUsers = [];
-        const alreadyInList = [];
-
-        targetUsers.forEach((user) => {
-          if (!userList.includes(user)) {
-            userList.push(user);
-            addedUsers.push(user);
-          } else {
-            alreadyInList.push(user);
-          }
-        });
-
-        let response = "";
-
-        if (addedUsers.length) {
-          response += `✅ Añadido(s): ${addedUsers
-            .map((user) => `@${user.split("@")[0]}`)
-            .join(", ")}.\n`;
-        }
-
-        if (alreadyInList.length) {
-          response += `⚠️ Ya estaba(n): ${alreadyInList
-            .map((user) => `@${user.split("@")[0]}`)
-            .join(", ")}.\n`;
-        }
-
-        return await sendReply(response.trim(), { mentions: targetUsers });
-      }
-
-      // Acción: Eliminar de la lista
-      if (action === "remove") {
-        const removedUsers = [];
-        const notInList = [];
-
-        targetUsers.forEach((user) => {
-          if (userList.includes(user)) {
-            userList = userList.filter((u) => u !== user);
-            removedUsers.push(user);
-          } else {
-            notInList.push(user);
-          }
-        });
-
-        let response = "";
-
-        if (removedUsers.length) {
-          response += `✅ Eliminado(s): ${removedUsers
-            .map((user) => `@${user.split("@")[0]}`)
-            .join(", ")}.\n`;
-        }
-
-        if (notInList.length) {
-          response += `⚠️ No estaba(n): ${notInList
-            .map((user) => `@${user.split("@")[0]}`)
-            .join(", ")}.\n`;
-        }
-
-        return await sendReply(response.trim(), { mentions: targetUsers });
-      }
-    } catch (error) {
-      console.error("Error en el comando list:", error);
-      await sendReply("❌ Ocurrió un problema al gestionar la lista.");
+      default:
+        await sendReply(
+          "❌ Comando no reconocido. Usa `addtolist`, `viewlist` o `removefromlist`."
+        );
     }
   },
 };
