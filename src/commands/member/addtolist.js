@@ -1,28 +1,24 @@
 const { PREFIX } = require("../../config");
-const { toUserJid, onlyNumbers } = require("../../utils");
-let userList = require("../../database/userList");
+const { toUserJid } = require("../../utils");
+const database = require("../../utils/database");
 
 module.exports = {
   name: "addtolist",
   description: "Añade un usuario a la lista.",
-  usage: `${PREFIX}addtolist @usuario o respondiendo a un mensaje`,
-  handle: async ({ args, isReply, socket, remoteJid, replyJid, sendReply, quotedMessage }) => {
-    if (!args.length && !isReply) {
-      return await sendReply("👻 Krampus.bot 👻 Menciona o responde a un usuario para añadirlo a la lista.");
+  usage: `${PREFIX}addtolist @usuario`,
+  handle: async ({ args, socket, sendReply, quotedMessage }) => {
+    if (!args.length && !quotedMessage) {
+      return await sendReply(`❌ ${PREFIX}addtolist @usuario`);
     }
 
-    const userToAddJid = isReply ? replyJid : toUserJid(args[0]);
-    const userToAddNumber = onlyNumbers(userToAddJid);
+    const userToAddJid = quotedMessage ? quotedMessage.sender : toUserJid(args[0]);
 
-    if (userToAddNumber.length < 7 || userToAddNumber.length > 15) {
-      return await sendReply("❌ El número proporcionado no es válido.");
-    }
-
-    if (userList.includes(userToAddJid)) {
+    if (database.userList.includes(userToAddJid)) {
       return await sendReply("⚠️ Este usuario ya está en la lista.");
     }
 
-    userList.push(userToAddJid);
-    await sendReply(`✅ Usuario @${userToAddNumber} añadido a la lista.`, { mentions: [userToAddJid] });
+    database.userList.push(userToAddJid);
+    database.writeJSON("userList", database.userList);
+    await sendReply(`✅ Usuario @${userToAddJid.split("@")[0]} añadido a la lista.`);
   },
 };
